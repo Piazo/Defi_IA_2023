@@ -2,29 +2,15 @@ import pandas as pd
 import numpy as np
 import features
 
-print(features.cityList)
 
-df = pd.read_csv('./test_set.csv')
-priceList = pd.read_csv('./sample_submission.csv')['price'].tolist()
-# print(priceList)
-df.reset_index
+pricing_requests = []
+# print(np.load('./data/requestHistory.npy')[1])
+r1 = np.load('./data/responseHistory.npy',  allow_pickle=True)[1]
 
-print(features.avatarList)
-features.avatarList.append("bernare")
-features.avatarList.append("tirie")
-print(features.avatarList)
-
-newdf = pd.DataFrame()
-newdf['language'] = pd.Series(pd.unique(df['language']))
-newdf['city'] = pd.Series(pd.unique(df['city']))
-newdf.to_feather("variable")
-
-
-for index, row in df.iterrows():
-    df.loc[index, 'price'] = priceList[df.loc[index, 'hotel_id']]
-# print(df["price"].tolist)
-
-
-
-# df2=df.groupby(['city'])['price'].agg("mean")
-# print(df2)
+requests = [r1]
+for r in requests:
+    pricing_requests.append(
+        pd.DataFrame(r.json()['prices']).assign(**r.json()['request'])
+    )
+pricing_requests = pd.concat(pricing_requests)
+print(pricing_requests)

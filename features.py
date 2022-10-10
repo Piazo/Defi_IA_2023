@@ -16,14 +16,21 @@ def initData():
 
     np.save('./data/avatar.npy', [])
 
+    np.save('requestHistory.npy', [])
+
+    np.save('responseHistory.npy', [])
+
 def addAvatar(name: str):
     # Add an avatar if not already existing
     np.save('./data/avatar.npy', list(dict.fromkeys(np.append(np.load('./data/avatar.npy'),name))))
 
+def addRequest(req: str):
+    np.save('./data/requestHistory.npy', (np.append(np.load('./data/avatar.npy'),req)))
 
+def addResponseHistory(resp):
+    np.save('./data/responseHistory.npy', (np.append(np.load('./data/avatar.npy'),resp)))
 
-
-def main(doInit = False, doAddAvatar = False):
+def main(doInit = False):
     if doInit: 
         #Validation part
         while True:
@@ -46,7 +53,6 @@ def main(doInit = False, doAddAvatar = False):
         if doInit:
             initData()
 
-    if doAddAvatar: addAvatar("Beber")
-    print(np.load('./data/avatar.npy'))
+    # print(np.load('./data/avatar.npy'))
 
-main(True, False)
+main(False)
