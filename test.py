@@ -11,5 +11,6 @@ for index, row in df.iterrows():
 # print(df["price"].tolist)
 
 
+
 df2=df.groupby(['city'])['price'].agg("mean")
 print(df2)
