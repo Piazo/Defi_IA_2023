@@ -18,8 +18,25 @@ def create_avatar(nameAvatar):
 
 
 
+
+
+
+
+def createDataFromRequest(requests):
+    pricing_requests = []
+    for r in requests:
+        pricing_requests.append(
+            pd.DataFrame(r.json()['prices']).assign(**r.json()['request'])
+        )
+
+    pricing_requests = pd.concat(pricing_requests)
+    pricing_requests.head()
+
+
+def contatenation():
+    pass
+
 def main(create_avatar = False):
     if create_avatar: create_avatar("test_avatar")
 
 main()
-
