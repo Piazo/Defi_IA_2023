@@ -18,13 +18,15 @@ def createAvatar(nameAvatar):
     features.addResponseHistory(r)
     print(r)
 
-# def get_avatar():
-#     r = requests.get(path(f"avatars/{user_id}"))
-#     for avatar in r.json():
-#         print(avatar['id'], avatar['name'])
+# Usefull if we lose all the data, i hope it won't happen lol
+def get_avatar():
+    r = requests.get(path(f"avatars/{user_id}"))
+    for avatar in r.json():
+        print(avatar['id'], avatar['name'])
 
 
 def pricingRequest(avatarName, language, city, date, mobile):
+    print("Starting pricing request...")
     params = {
         "avatar_name": avatarName,
         "language": language,
@@ -34,31 +36,13 @@ def pricingRequest(avatarName, language, city, date, mobile):
     r = requests.get(path(f"pricing/{user_id}"), params=params)
     features.addRequest('requests.get(path(f"pricing/{user_id}"), params='+str(params)+')')
     features.addResponseHistory(r)
-    return r
-
-def saveResp():
-    r = pricingRequest("Avataricard001", "french", "paris", 44, 0)
-    df = pd.read_json(r)
-    print(df)
-    df.to_csv('./data/testtodf.csv')
+    print("Pricing request done !")
 
 
-# def createDataFromRequest(requests):
-#     pricing_requests = []
-#     for r in requests:
-#         pricing_requests.append(
-#             pd.DataFrame(r.json()['prices']).assign(**r.json()['request'])
-#         )
 
-#     pricing_requests = pd.concat(pricing_requests)
-#     pricing_requests.head()
-
-
-# def contatenation():
-#     pass
 
 def main(create_avatar = False, doARequest = False):
-    if create_avatar: createAvatar("Avataricard001")
-    if doARequest: saveResp()
+    if create_avatar: createAvatar("Avataricard01")
+    if doARequest: pricingRequest("Avataricard01", 'french', 'paris', 44, 0)
 
 main(False, True)

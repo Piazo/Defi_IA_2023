@@ -16,19 +16,28 @@ def initData():
 
     np.save('./data/avatar.npy', [])
 
-    np.save('requestHistory.npy', [])
+    np.save('./data/requestHistory.npy', [])
 
-    np.save('responseHistory.npy', [])
+    np.save('./data/responseHistory.npy', [])
 
 def addAvatar(name: str):
     # Add an avatar if not already existing
     np.save('./data/avatar.npy', list(dict.fromkeys(np.append(np.load('./data/avatar.npy'),name))))
 
 def addRequest(req: str):
-    np.save('./data/requestHistory.npy', (np.append(np.load('./data/avatar.npy'),req)))
+    np.save('./data/requestHistory.npy', (np.append(np.load('./data/requestHistory.npy'),req)))
 
 def addResponseHistory(resp):
-    np.save('./data/responseHistory.npy', (np.append(np.load('./data/avatar.npy'),resp)))
+    np.save('./data/responseHistory.npy', (np.append(np.load('./data/responseHistory.npy', allow_pickle=True),resp)))
+
+def getAllAvatar():
+    return np.load("./data/avatar.npy")
+
+def getAllRequests():
+    return np.load("./data/requestHistory.npy")
+
+def getAllResponses():
+    return np.load("./data/responseHistory.npy", allow_pickle=True)
 
 def main(doInit = False):
     if doInit: 
