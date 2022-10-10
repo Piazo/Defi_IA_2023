@@ -1,9 +1,10 @@
+from ctypes.wintypes import BOOL
 import urllib.parse
 import requests
 import pandas as pd
 import features
 
-print(features.cityList, features.languageList)
+# print(features.cityList, features.languageList)
 
 domain = "51.91.251.0"
 port = 3000
@@ -16,4 +17,9 @@ def create_avatar(nameAvatar):
     r = requests.post(path(f'avatars/{user_id}/{name}'))
 
 
+
+def main(create_avatar = False):
+    if create_avatar: create_avatar("test_avatar")
+
+main()
 
