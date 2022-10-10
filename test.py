@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 df = pd.read_csv('./test_set.csv')
 priceList = pd.read_csv('./sample_submission.csv')['price'].tolist()
