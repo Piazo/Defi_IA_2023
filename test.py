@@ -6,6 +6,11 @@ priceList = pd.read_csv('./sample_submission.csv')['price'].tolist()
 # print(priceList)
 df.reset_index
 
+newdf = pd.DataFrame()
+newdf['language'] = pd.Series(pd.unique(df['language']))
+newdf['city'] = pd.Series(pd.unique(df['city']))
+newdf.to_feather("variable")
+
 
 for index, row in df.iterrows():
     df.loc[index, 'price'] = priceList[df.loc[index, 'hotel_id']]
@@ -13,5 +18,5 @@ for index, row in df.iterrows():
 
 
 
-df2=df.groupby(['city'])['price'].agg("mean")
-print(df2)
+# df2=df.groupby(['city'])['price'].agg("mean")
+# print(df2)
