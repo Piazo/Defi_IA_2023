@@ -9,6 +9,11 @@ priceList = pd.read_csv('./sample_submission.csv')['price'].tolist()
 # print(priceList)
 df.reset_index
 
+print(features.avatarList)
+features.avatarList.append("bernare")
+features.avatarList.append("tirie")
+print(features.avatarList)
+
 newdf = pd.DataFrame()
 newdf['language'] = pd.Series(pd.unique(df['language']))
 newdf['city'] = pd.Series(pd.unique(df['city']))
