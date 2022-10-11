@@ -42,6 +42,6 @@ def pricingRequest(avatarName, language, city, date, mobile):
 
 def main(create_avatar = False, doARequest = False):
     if create_avatar: createAvatar("Avataricard01")
-    if doARequest: pricingRequest("Avataricard01", 'french', 'paris', 44, 0)
+    if doARequest: pricingRequest("Avataricard01", 'maltese', 'vilnius', 44, 1)
 
 main(False, True)
