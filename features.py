@@ -39,6 +39,15 @@ def getAllRequests():
 def getAllResponses():
     return np.load("./data/responseHistory.npy", allow_pickle=True)
 
+def getAllCity():
+    return np.load("./data/city.npy")
+
+def getAllLanguage():
+    return np.load("./data/language.npy")
+
+def getAllDate():
+    return np.load("./data/date.npy")
+
 def main(doInit = False):
     if doInit: 
         #Validation part
