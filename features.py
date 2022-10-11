@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 def initData():
     np.save('./data/language.npy', ['romanian', 'swedish', 'maltese', 'belgian', 'luxembourgish', 
@@ -47,6 +48,12 @@ def getAllLanguage():
 
 def getAllDate():
     return np.load("./data/date.npy")
+
+def prepareDataframe(df):
+    hotels = pd.read_csv('./data/features_hotels.csv', index_col=['hotel_id', 'city'])
+    return df.join(hotels, on=['hotel_id', 'city'])
+
+
 
 def main(doInit = False):
     if doInit: 
