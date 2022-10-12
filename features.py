@@ -63,7 +63,7 @@ def addOrderRequest(df):
             cptOrdReq[row["avatar_id"]] = cptOrdReq[row["avatar_id"]] +1
             addOne = False
         df.loc[ind, "request_order"] = cptOrdReq[row["avatar_id"]]
-    df.drop(['ind'], axis=1)
+    df = df.drop(['ind'], axis=1)
     return df
 
 
