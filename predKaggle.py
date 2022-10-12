@@ -40,13 +40,13 @@ def createCSV():
 
 
     '''
-    header = ["ID", "Category"]
+    header = ["ID", "price"]
     data = []
     for i in range(len(test_data)):
         prediction = [i, int(clf.predict([test_data[i]]))]
         data.append(prediction)
 
-    with open('testPredictions.csv', 'w', encoding='UTF8', newline='') as f:
+    with open('predictionsKaggle.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
         # write the header
         writer.writerow(header)
