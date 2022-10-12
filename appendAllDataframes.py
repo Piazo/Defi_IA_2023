@@ -20,6 +20,7 @@ for r in requests:
         pd.DataFrame(r.json()['prices']).assign(**r.json()['request'])
     )
 pricing_requests = pd.concat(pricing_requests)
+
 print("Concatenating done !")
 print("Exporting to csv...")
 pricing_requests.to_csv('./data/allData.csv')

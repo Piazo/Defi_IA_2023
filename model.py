@@ -13,14 +13,11 @@ def regression():
 
     # On récupère le dataFrame
     df = pd.read_csv("./data/allData.csv")
-
     # On enlève la première colonne, et on enlève l'avatar pour l'instant
-    df.drop(columns=df.columns[0], axis=1, inplace=True)
-    df.drop(['avatar_id'], axis=1, inplace=True)
-
+    df = df.drop(columns=["avatar_id"])
     # On rajoute les attributs propre aux hôtels
     df = features.prepareDataframe(df)
-
+    print(df)
     # on récupère la colonne cible, le prix, et on la supprime
     y = df["price"]
     df.drop(["price"], axis=1, inplace=True)

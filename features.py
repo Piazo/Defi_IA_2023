@@ -49,6 +49,26 @@ def getAllLanguage():
 def getAllDate():
     return np.load("./data/date.npy")
 
+def addOrderRequest(df):
+    df = df.rename(columns={"Unnamed: 0":"ind"})
+    avatarList = pd.unique(df['avatar_id'])
+    cptOrdReq = {}
+    for avatar in avatarList:
+        cptOrdReq[avatar] = 1
+    addOne = False
+    for ind, row in df.iterrows():
+        if df.loc[ind, "ind"] > 0:
+            addOne = True
+        if addOne and df.loc[ind, "ind"] == 0:
+            cptOrdReq[row["avatar_id"]] = cptOrdReq[row["avatar_id"]] +1
+            addOne = False
+        df.loc[ind, "request_order"] = cptOrdReq[row["avatar_id"]]
+    df.drop(['ind'], axis=1)
+    return df
+
+
+
+
 def prepareDataframe(df):
     hotels = pd.read_csv('./data/features_hotels.csv', index_col=['hotel_id', 'city'])
     return df.join(hotels, on=['hotel_id', 'city'])
