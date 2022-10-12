@@ -19,11 +19,12 @@ def regression():
 
     # On rajoute les attributs propre aux hôtels
     df = features.prepareDataframe(df)
-    print(df)
     
     # on récupère la colonne cible, le prix, et on la supprime
     y = df["price"]
     df.drop(["price"], axis=1, inplace=True)
+
+    print(df)
 
     # On encode les données non numériques avec OneHotEncoder
     columns_transfo = make_column_transformer(
@@ -42,23 +43,29 @@ def regression():
     scaler = StandardScaler().fit(X_train)
     X_train_transformed = scaler.transform(X_train)
     X_test_transformed = scaler.transform(X_test)
-    
-    print("X_train_transformed shape")
-
+ 
+        
     ## Création du modèle !
 
     clf = RandomForestRegressor(max_depth=18, min_samples_leaf=1).fit(X_train_transformed, y_train)
     print("sans random : ", mean_squared_error(y_test, clf.predict(X_test_transformed)))
     
-    clf = RandomForestRegressor(max_depth=18, min_samples_leaf=1, random_state=0).fit(X_train_transformed, y_train)
-    print("avec random : ", mean_squared_error(y_test, clf.predict(X_test_transformed)))
+    clf2 = RandomForestRegressor(max_depth=18, min_samples_leaf=1, random_state=0).fit(X_train_transformed, y_train)
+    print("avec random : ", mean_squared_error(y_test, clf2.predict(X_test_transformed)))
 
     reg = MLPRegressor(hidden_layer_sizes=(128, 64), activation="relu",
                                 random_state=1, max_iter=2500).fit(X_train_transformed, y_train)
     currentScore = mean_squared_error(y_test, reg.predict(X_test_transformed))
     print("MSE score  = ", currentScore)
 
-    
+
+
+
+
+
+
+
+    '''
     minScore = 99999
     input1 = 0
     input2 = 0
@@ -84,7 +91,7 @@ def regression():
 
     # Use for the generation of the csv file
     
-    '''
+    
     header = ["index", "price"]
     data = []
     for i in range(len(test_data)):
@@ -112,7 +119,7 @@ def regression():
 
 
     '''
-     # On veut minimiser MSE
+    # On veut minimiser MSE
     minScore = 4000
     max_depth = 0
     min_leaf = 0
@@ -130,6 +137,8 @@ def regression():
     print("\nAvec un score MSE = ", minScore)
     '''
     
+    return clf2
+
 
 if __name__=="__main__":
     regression()
