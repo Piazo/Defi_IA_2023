@@ -12,12 +12,15 @@ from sklearn.ensemble import RandomForestRegressor
 def regression():
 
     # On récupère le dataFrame
-    df = pd.read_csv("./data/allData.csv")
-    # On enlève la première colonne, et on enlève l'avatar pour l'instant
-    df = df.drop(columns=["avatar_id"])
+    df = features.addOrderRequest(pd.read_csv("./data/allData.csv"))
+    
+    # On enlève la première colonne, et on enlève l'avatar et le request order pour l'instant
+    df = df.drop(columns=["avatar_id", "request_order"])
+
     # On rajoute les attributs propre aux hôtels
     df = features.prepareDataframe(df)
     print(df)
+    
     # on récupère la colonne cible, le prix, et on la supprime
     y = df["price"]
     df.drop(["price"], axis=1, inplace=True)
@@ -29,6 +32,7 @@ def regression():
     transformed = columns_transfo.fit_transform(df).toarray()
     df = pd.DataFrame(transformed, columns=columns_transfo.get_feature_names_out())
     
+    print(df)
 
     # On crée le jeu de tests et d'entraînement
     X_train, X_test, y_train, y_test = train_test_split(df, y, test_size=0.2, random_state=42)
@@ -39,6 +43,7 @@ def regression():
     X_train_transformed = scaler.transform(X_train)
     X_test_transformed = scaler.transform(X_test)
     
+    print("X_train_transformed shape")
 
     ## Création du modèle !
 
