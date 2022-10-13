@@ -92,6 +92,7 @@ def regression(pred = False):
         test_data = pd.DataFrame(transformed, columns=columns_transfo.get_feature_names_out())
 
         print(test_data.columns)
+        test_data = features.rearrangeCol(df, test_data)
 
         # On normalise les données en se basant sur le training set
         scaler = StandardScaler().fit(test_data)

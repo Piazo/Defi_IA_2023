@@ -54,6 +54,12 @@ def deleteLastRequest():
     np.save('./data/responseHistory.npy', getAllResponses()[0:len(getAllResponses())-1])
     print("Deleted last request !")
 
+def rearrangeCol(bonOrdre, aFaire):
+    listColOrdre = bonOrdre.columns.tolist()
+    df = pd.DataFrame()
+    for col in listColOrdre:
+        df[col] = aFaire[col].tolist()
+    return df
 
 
 # Add the request_order column to the inputted dataframe
