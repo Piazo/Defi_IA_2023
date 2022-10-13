@@ -49,6 +49,13 @@ def getAllLanguage():
 def getAllDate():
     return np.load("./data/date.npy")
 
+def deleteLastRequest():
+    np.save('./data/requestHistory.npy', getAllRequests()[0:len(getAllRequests())-1])
+    np.save('./data/responseHistory.npy', getAllResponses()[0:len(getAllResponses())-1])
+    print("Deleted last request !")
+
+deleteLastRequest()
+
 
 # Add the request_order column to the inputted dataframe
 def addOrderRequest(df):
