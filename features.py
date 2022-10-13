@@ -79,6 +79,7 @@ def prepareDataframe(df):
 
 
 def main(doInit = False):
+    print("capasse")
     if doInit: 
         #Validation part
         while True:
@@ -103,4 +104,5 @@ def main(doInit = False):
 
     # print(np.load('./data/avatar.npy'))
 
-main(False)
+if __name__=="__main__":
+    main(False)
