@@ -49,6 +49,8 @@ def getAllLanguage():
 def getAllDate():
     return np.load("./data/date.npy")
 
+
+# Add the request_order column to the inputted dataframe
 def addOrderRequest(df):
     df = df.rename(columns={"Unnamed: 0":"ind"})
     avatarList = pd.unique(df['avatar_id'])
@@ -63,12 +65,13 @@ def addOrderRequest(df):
             cptOrdReq[row["avatar_id"]] = cptOrdReq[row["avatar_id"]] +1
             addOne = False
         df.loc[ind, "request_order"] = cptOrdReq[row["avatar_id"]]
+    # Delete the previous index column that is now useless
     df = df.drop(['ind'], axis=1)
     return df
 
 
 
-
+# Add the hotel features on the inputted dataframe
 def prepareDataframe(df):
     hotels = pd.read_csv('./data/features_hotels.csv', index_col=['hotel_id', 'city'])
     return df.join(hotels, on=['hotel_id', 'city'])
