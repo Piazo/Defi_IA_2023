@@ -37,6 +37,7 @@ def pricingRequest(avatarName, language, city, date, mobile):
     features.addResponseHistory(r)
     print("Pricing request done !")
 
+"""
 tab_request = [
                 ["Avataricard01", 'austrian', 'amsterdam', 44, 1],
                 ["Avataricard01", 'austrian', 'copenhagen', 44, 0],
@@ -101,17 +102,16 @@ tab_request = [
                 ["Avataricard01", 'spanish', 'rome', 12, 0],
                 ["Avataricard01", 'spanish', 'sofia', 12, 1],
             ]
-
+"""
 
 def main(create_avatar = False, doARequest = False):
     if create_avatar: createAvatar("Avataricard01")
-    for i in range(len(tab_request)):
-        avatar = tab_request[i][0]
-        language = tab_request[i][1]
-        city = tab_request[i][2]
-        date = tab_request[i][3] 
-        mobile = tab_request[i][4]
-        if doARequest: pricingRequest(avatar, language, city, date, mobile)
+    avatar = "Avataricard01"
+    language = "hunagarian"
+    city = "rome"
+    date = 2 
+    mobile = 0
+    if doARequest: pricingRequest(avatar, language, city, date, mobile)
 
 main(False, False)
 

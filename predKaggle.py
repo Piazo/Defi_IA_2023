@@ -15,7 +15,7 @@ def createCSV():
     test_data = pd.read_csv("./data/test_set.csv")
 
     #On supprime les colonnes index, avatar et order_request pour l'instant
-    test_data = test_data.drop(columns=["index", "avatar_id", "order_requests"])
+    test_data = test_data.drop(columns=["index", "avatar_id"])
 
     # On ajoute les caractéristiques des hôtels
     test_data = features.prepareDataframe(test_data)
@@ -29,6 +29,10 @@ def createCSV():
     transformed = columns_transfo.fit_transform(test_data).toarray()
     test_data = pd.DataFrame(transformed, columns=columns_transfo.get_feature_names_out())
     
+    print(" --- Liste des colonnes, dataset testing  ---")
+
+    print(test_data.columns)
+
 
     # On normalise les données
     scaler = StandardScaler().fit(test_data)
