@@ -54,7 +54,6 @@ def deleteLastRequest():
     np.save('./data/responseHistory.npy', getAllResponses()[0:len(getAllResponses())-1])
     print("Deleted last request !")
 
-deleteLastRequest()
 
 
 # Add the request_order column to the inputted dataframe
