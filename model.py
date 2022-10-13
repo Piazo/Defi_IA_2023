@@ -1,3 +1,4 @@
+from matplotlib import test
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -28,7 +29,6 @@ def regression(pred = False):
     y = df["price"]
     df.drop(["price"], axis=1, inplace=True)
 
-    print(df)
 
     # On encode les données non numériques avec OneHotEncoder
     columns_transfo = make_column_transformer(
@@ -47,7 +47,6 @@ def regression(pred = False):
     X_train_transformed = scaler.transform(X_train)
     X_test_transformed = scaler.transform(X_test)
  
-        
     ## Création du modèle !
 
     # Meilleur Score :  i =  128 j =  32
@@ -72,6 +71,7 @@ def regression(pred = False):
     print("\nAvec un score MSE = ", minScore)
     """
     
+    print(df.columns)
 
     bestModel = RandomForestRegressor(max_depth=31, min_samples_leaf=1, random_state=0).fit(X_train_transformed, y_train)
 
@@ -91,7 +91,10 @@ def regression(pred = False):
         transformed = columns_transfo.fit_transform(test_data).toarray()
         test_data = pd.DataFrame(transformed, columns=columns_transfo.get_feature_names_out())
 
+        print(test_data.columns)
+
         # On normalise les données en se basant sur le training set
+        scaler = StandardScaler().fit(test_data)
         X_test_data_transformed = scaler.transform(test_data)
 
         # On génère le csv
