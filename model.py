@@ -7,8 +7,11 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import make_column_transformer
-from sklearn.ensemble import RandomForestRegressor
+from numba import jit, cuda
 
+
+
+@jit(target_backend='cuda')                         
 def regression():
 
     # On récupère le dataFrame
@@ -47,50 +50,64 @@ def regression():
         
     ## Création du modèle !
 
-    clf = RandomForestRegressor(max_depth=18, min_samples_leaf=1).fit(X_train_transformed, y_train)
-    print("sans random : ", mean_squared_error(y_test, clf.predict(X_test_transformed)))
-    
-    clf2 = RandomForestRegressor(max_depth=18, min_samples_leaf=1, random_state=0).fit(X_train_transformed, y_train)
-    print("avec random : ", mean_squared_error(y_test, clf2.predict(X_test_transformed)))
-
-    reg = MLPRegressor(hidden_layer_sizes=(128, 64), activation="relu",
-                                random_state=1, max_iter=2500).fit(X_train_transformed, y_train)
-    currentScore = mean_squared_error(y_test, reg.predict(X_test_transformed))
-    print("MSE score  = ", currentScore)
 
 
-
-
-
-
-
-
-    '''
-    minScore = 99999
+    minScore = 9999999
     input1 = 0
     input2 = 0
-    for i in [32, 64, 128, 256]:
-        print(i)
-        for j in [32, 64, 128, 256]:
+    input3 = 0
+    for i in np.linspace(64, 1024, 10, dtype=int):
+        for j in np.linspace(64, 1024, 10, dtype=int):
+            for k in np.linspace(64, 1024, 10, dtype=int):
+                reg = MLPRegressor(hidden_layer_sizes=(i, j, k), activation="relu",
+                                    random_state=1, max_iter=3000).fit(X_train_transformed, y_train)
+                currentScore = mean_squared_error(y_test, reg.predict(X_test_transformed))
+                print(" i =  ",i, " , j = ", j, " , k = ", k, " | score = ", currentScore)
+                if(currentScore < minScore):
+                    minScore = currentScore
+                    input1 = i
+                    input2 = j
+                    input3 = k
+
+                  
+    
+    print(" i =  ", input1, " , j = ", input2, " , k = ", input3, " | score = ", minScore)
+    print("\n-- 3 couches : Résultat trouvé avec un score MSE = ", minScore)
+
+    print("\n-------------------------------\n")
+
+
+
+    minScore = 9999999
+    input1 = 0
+    input2 = 0
+    for i in np.linspace(64, 1024, 10, dtype=int):
+        for j in np.linspace(64, 1024, 20, dtype=int):
             reg = MLPRegressor(hidden_layer_sizes=(i, j), activation="relu",
-                                random_state=1, max_iter=2500).fit(X_train_transformed, y_train)
+                                random_state=1, max_iter=3000).fit(X_train_transformed, y_train)
             currentScore = mean_squared_error(y_test, reg.predict(X_test_transformed))
-            print("     ", j, " = ", currentScore)
+            print(" i =  ",i, " , j = ", j, " , k = ", k, " | score = ", currentScore)
             if(currentScore < minScore):
                 minScore = currentScore
                 input1 = i
                 input2 = j
-                  
-    print(" i = ", input1)
-    print(" j = ", input2)
 
-    print("\nRésultat trouvé avec un score MSE = ", minScore)
+    print(" i =  ", input1, " , j = ", input2, " | score = ", minScore)
+    print("\n -- 2 couches : Résultat trouvé avec un score MSE = ", minScore)
+
+    print("\n-------------------------------\n")
+
+
+
+
+
 
     # Meilleur Score :  i =  128 j =  32
 
 
     # Use for the generation of the csv file
     
+    '''
     
     header = ["index", "price"]
     data = []
@@ -105,18 +122,6 @@ def regression():
         # write data
         writer.writerows(data)
     '''
-
-
-
-
-
-
-
-
-
-
-
-
 
     '''
     # On veut minimiser MSE
@@ -137,7 +142,7 @@ def regression():
     print("\nAvec un score MSE = ", minScore)
     '''
     
-    return clf2
+    # return clf2
 
 
 if __name__=="__main__":
