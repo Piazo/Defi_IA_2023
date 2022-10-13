@@ -107,7 +107,7 @@ tab_request = [
 def main(create_avatar = False, doARequest = False):
     if create_avatar: createAvatar("Avataricard01")
     avatar = "Avataricard01"
-    language = "hunagarian"
+    language = "hungarian"
     city = "rome"
     date = 2 
     mobile = 0
