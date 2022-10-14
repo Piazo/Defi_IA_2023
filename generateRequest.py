@@ -2,11 +2,14 @@ import streamlit as st
 import features
 import numpy as np
 import random
+
+
 st. set_page_config(layout="wide")
 
 
 # Function for the request creation
 def generateRequest(nbReq, avatarGen, langGen, cityGen, dayGen, deviceGen):
+    print("Generating requests...")
     tabReq = []
     print(dayGen)
     dayGenForLoop = np.linspace(dayGen[0], dayGen[1], nbReq)
