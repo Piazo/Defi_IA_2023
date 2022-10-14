@@ -39,7 +39,7 @@ def pricingRequest(avatarName, language, city, date, mobile):
 
 
 def main(create_avatar = False, doARequest = False):
-    if create_avatar: createAvatar("Avataricard05")
+    if create_avatar: createAvatar("Avataricard15")
     listReq = np.load("./data/request.npy")
     for req in listReq:
         avatar = req[0]
