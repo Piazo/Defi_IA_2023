@@ -75,7 +75,8 @@ def createAvatarIDcsv():
     # Et on finit par exporter le bordel en csv
     pd.DataFrame({"avatar_name":listName, "avatar_id":listID}).to_csv("./data/AvatarNameAndID.csv")
     print("AvatarNameAndID.csv saved !")
-createAvatarIDcsv()
+
+
 def getMinDayOfAvatar(avatarName):
     appendAllDataframes.appendDf()
     dfAvatarID = pd.read_csv('./data/AvatarNameAndID.csv')
@@ -83,10 +84,8 @@ def getMinDayOfAvatar(avatarName):
     # On recupere l'ID associe, au nom de l'avatar puis on le met en string et on garde a partir du 5eme carac
     # parce que c'est mal fichu ce bordel et on cast en int
     idAvatar = int(dfAvatarID.loc[dfAvatarID["avatar_name"]== avatarName, "avatar_id"].to_string()[5:])
-    print(df.dtypes)
     df = df[df["avatar_id"] == idAvatar]
-    print(df["date"].min())
-# getMinDayOfAvatar("Avataricard01")
+    return df["date"].min()
 
 def rearrangeCol(bonOrdre, aFaire):
     listColOrdre = bonOrdre.columns.tolist()
