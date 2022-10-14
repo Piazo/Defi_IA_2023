@@ -76,6 +76,9 @@ def createAvatarIDcsv():
     pd.DataFrame({"avatar_name":listName, "avatar_id":listID}).to_csv("./data/AvatarNameAndID.csv")
     print("AvatarNameAndID.csv saved !")
 
+def getAvatarName(id):
+    dfAvatarID = pd.read_csv('./data/AvatarNameAndID.csv')
+    return pd.unique(dfAvatarID[dfAvatarID["avatar_id"] == id]["avatar_name"])[0]
 
 def getMinDayOfAvatar(avatarName):
     appendAllDataframes.appendDf()
