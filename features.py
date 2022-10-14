@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+import appendAllDataframes
+import re
 
 def initData():
     np.save('./data/language.npy', ['romanian', 'swedish', 'maltese', 'belgian', 'luxembourgish', 
@@ -53,6 +55,41 @@ def deleteLastRequest():
     np.save('./data/requestHistory.npy', getAllRequests()[0:len(getAllRequests())-1])
     np.save('./data/responseHistory.npy', getAllResponses()[0:len(getAllResponses())-1])
     print("Deleted last request !")
+
+def createAvatarIDcsv():
+    req = getAllRequests()
+    resp = getAllResponses()
+    listID = []
+    listName = []
+    for i in range(len(req)):
+        if "nameAvatar" in req[i]:
+            # Alors c'est le bordel mais en gros ca recupere le texte apres "id", 
+            # puis on garde juste les chiffres avant un autre caractere
+            # grace a cette belle expression reguliere  et ca donne l'ID c'est fabuleux
+            # Puis on met un indice 0 a la fin psk cest une liste et qu'on veut que le 1er elem
+            # et on le cast en integer pour avoir le bon format et GG
+            listID.append(int(re.findall(r"(\d+)[,}]", resp[i].text.split('"id":',1)[1])[0]))
+            # Alors la en gros on fait pareil mais on split deux fois et hopla magie
+            # On recupere le nom
+            listName.append(resp[i].text.split('"name":"',1)[1].split('"',1)[0])
+    # Et on finit par exporter le bordel en csv
+    pd.DataFrame({"avatar_name":listName, "avatar_id":listID}).to_csv("./data/AvatarNameAndID.csv")
+    print("AvatarNameAndID.csv saved !")
+
+def getMinDayOfAvatar(avatarName):
+    appendAllDataframes.appendDf()
+    dfAvatarID = pd.read_csv('./data/AvatarNameAndID.csv')
+    df = pd.read_csv("./data/allData.csv")
+    df["avatar_id"] = pd.to_numeric(df["avatar_id"])
+    # On recupere l'ID associe, au nom de l'avatar puis on le met en string et on garde a partir du 5eme carac
+    # parce que c'est mal fichu ce bordel et on cast en int
+    idAvatar = int(dfAvatarID.loc[dfAvatarID["avatar_name"]== avatarName, "avatar_id"].to_string()[5:])
+
+    # CA MARCHE PAS COMPREND PAS PK NIQUE SA MERE
+    # df = df[df["avatar_id"]==idAvatar]
+    # print(df)
+    #TODO: link avatar to its ID
+getMinDayOfAvatar("Avataricard02")
 
 def rearrangeCol(bonOrdre, aFaire):
     listColOrdre = bonOrdre.columns.tolist()
@@ -113,6 +150,5 @@ def main(doInit = False):
         if doInit:
             initData()
 
-    # print(np.load('./data/avatar.npy'))
-
-main(False)
+if __name__=="__main__":
+    main(False)

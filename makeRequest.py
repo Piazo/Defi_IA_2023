@@ -105,13 +105,14 @@ tab_request = [
 """
 
 def main(create_avatar = False, doARequest = False):
-    if create_avatar: createAvatar("Avataricard01")
-    avatar = "Avataricard01"
+    if create_avatar: createAvatar("Avataricard05")
+    avatar = "Avataricard02"
     language = "hungarian"
     city = "rome"
     date = 2 
     mobile = 0
     if doARequest: pricingRequest(avatar, language, city, date, mobile)
 
-main(False, False)
+if __name__=="__main__":
+    main(False, False)
 
