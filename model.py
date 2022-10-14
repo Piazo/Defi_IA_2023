@@ -95,7 +95,6 @@ def regression(pred = False):
         print(test_data.columns)
         
         # On normalise les données en se basant sur le training set
-        scaler = StandardScaler().fit(test_data)
         X_test_data_transformed = scaler.transform(test_data)
 
         # On génère le csv
@@ -116,4 +115,4 @@ def regression(pred = False):
 
 
 if __name__=="__main__":
-    regression(pred = True)
+    regression(pred = False)
