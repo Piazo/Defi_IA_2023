@@ -14,8 +14,12 @@ def generateRequest(nbReq, avatarGen, langGen, cityGen, dayGen, deviceGen):
     print(dayGen)
     dayGenForLoop = np.linspace(dayGen[0], dayGen[1], nbReq)
     dayGenForLoop = [round(x) for x in dayGenForLoop]
-    for i in range(nbReq):
-        tabReq.append([random.choice(avatarGen), random.choice(langGen), random.choice(cityGen), dayGenForLoop[i], random.choice(deviceGen)])
+    try:
+        for i in range(nbReq):
+            tabReq.append([random.choice(avatarGen), random.choice(langGen), random.choice(cityGen), dayGenForLoop[i], random.choice(deviceGen)])
+    except:
+        pass
+    np.save('./data/request.npy', tabReq)
     print(tabReq)
 
 
