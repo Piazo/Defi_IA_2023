@@ -2,6 +2,12 @@ import numpy as np
 import pandas as pd
 import appendAllDataframes
 import re
+import streamlit as st
+import random
+import math
+import plotly.express as px
+
+
 
 def initData():
     np.save('./data/language.npy', ['romanian', 'swedish', 'maltese', 'belgian', 'luxembourgish', 
@@ -76,12 +82,12 @@ def createAvatarIDcsv():
     pd.DataFrame({"avatar_name":listName, "avatar_id":listID}).to_csv("./data/AvatarNameAndID.csv")
     print("AvatarNameAndID.csv saved !")
 
+
 def getAvatarName(id):
     dfAvatarID = pd.read_csv('./data/AvatarNameAndID.csv')
     return pd.unique(dfAvatarID[dfAvatarID["avatar_id"] == id]["avatar_name"])[0]
 
 def getMinDayOfAvatar(avatarName):
-    appendAllDataframes.appendDf()
     dfAvatarID = pd.read_csv('./data/AvatarNameAndID.csv')
     df = pd.read_csv("./data/allData.csv")
     # On recupere l'ID associe, au nom de l'avatar puis on le met en string et on garde a partir du 5eme carac
@@ -126,8 +132,7 @@ def prepareDataframe(df):
 
 
 
-def main(doInit = False):
-    print("capasse")
+def reinitializeData(doInit = False):
     if doInit: 
         #Validation part
         while True:
@@ -150,5 +155,113 @@ def main(doInit = False):
         if doInit:
             initData()
 
-if __name__=="__main__":
-    main(False)
+# Function for the request creation
+def generateRequest(nbReq, avatarGen, langGen, cityGen, dayGen, deviceGen):
+    print("Generating requests...")
+    tabReq = []
+    dayGenForLoop = np.linspace(dayGen[0], dayGen[1], nbReq)
+    dayGenForLoop = [round(x) for x in dayGenForLoop]
+    try:
+        for i in range(nbReq):
+            tabReq.append([random.choice(avatarGen), random.choice(langGen), random.choice(cityGen), dayGenForLoop[i], random.choice(deviceGen)])
+    except:
+        pass
+    np.save('./data/request.npy', tabReq)
+    st.write("Request generated :")
+    for i in range(0, math.floor(len(tabReq)), 3):
+        try:
+            st.markdown(str(tabReq[i])+str(tabReq[i+1])+str(tabReq[i+2]))
+        except:
+            try:
+                st.markdown(str(tabReq[i])+str(tabReq[i+1]))
+            except:
+                st.markdown(str(tabReq[i]))
+
+# Front for the request creation
+def stGenRequest():
+    col1, col2, col3, col4 = st.columns([1,1,1,2])
+    with col3:
+        #Number of request to generate
+        nbReq = st.number_input("How many request ?", min_value=1)
+
+    col1, col2, col3, col4, col5 = st.columns(5)
+    with col1:
+        #option on avatar
+        optAvatar = st.selectbox(
+            'Avatar selection mode',
+            ('All avatar randomly', 'Avatar selection'))
+        if optAvatar != "All avatar randomly":
+            avatarGen = st.multiselect(
+                'Generate request for which avatar ?',
+                getAllAvatar())
+        else:
+            avatarGen = list(getAllAvatar())
+
+    with col2:
+        #option on avatar
+        optLangage = st.selectbox(
+            'Language selection mode',
+            ('All language randomly', 'Language selection'))
+        if optLangage != "All language randomly":
+            langGen = st.multiselect(
+                'Generate request for which language ?',
+                getAllLanguage())
+        else:
+            langGen = list(getAllLanguage())
+
+    with col3:
+        #option on avatar
+        optCity = st.selectbox(
+            'City selection mode',
+            ('All city randomly', 'City selection'))
+        if optCity != "All city randomly":
+            cityGen = st.multiselect(
+                'Generate request for which city ?',getAllCity())
+        else:
+            cityGen = list(getAllCity())
+
+    with col4:
+        #option on avatar
+        optDay = st.selectbox(
+            'Day selection mode',
+            ('Full interval', 'Day interval selection'))
+        if optDay != "Full interval":
+            dayFrom = int(st.selectbox(
+                "Start from ?",
+                getAllDate()))
+            dayTo = int(st.selectbox(
+                'to ?',
+                getAllDate()))
+            dayGen = [dayFrom, dayTo]
+        else:
+            dayGen = [44,0]
+
+    with col5:
+        #option on device, 1 is for mobile, 0 is for computer
+        optMob = st.selectbox(
+            'Device selection mode',
+            ('Random', 'Mobile only', 'Computer only'))
+        if optMob == "Mobile only":
+            deviceGen = [1]
+        elif optMob == "Computer only":
+            deviceGen = [0]
+        else:
+            deviceGen = [0,1]
+    if st.button("Generate requests"):
+            generateRequest(nbReq, avatarGen, langGen, cityGen, dayGen, deviceGen)
+
+def stPlotting():
+    # import plotly.express as px
+    df = pd.read_csv("./data/allData.csv")
+
+    # print(df)
+    avID=pd.unique(df["avatar_id"])
+    tabX= []
+    tabY = []
+    for avatID in avID:
+        tabX.append(getAvatarName(avatID))
+        tabY.append(getMinDayOfAvatar(getAvatarName(avatID)))
+
+    # Horizontal Bar Plot
+    fig = px.bar(x=tabX, y=tabY)
+    st.plotly_chart(fig)

@@ -7,20 +7,17 @@ import plotly.express as px
 import features
 
 # import plotly.express as px
-
 df = pd.read_csv("./data/allData.csv")
-
 
 # print(df)
 avID=pd.unique(df["avatar_id"])
-x= []
-y = []
+tabX= []
+tabY = []
 for avatID in avID:
-    x.append(features.getAvatarName(avatID))
-    y.append(features.getMinDayOfAvatar(features.getAvatarName(avatID)))
-print(x, y)
+    tabX.append(features.getAvatarName(avatID))
+    tabY.append(features.getMinDayOfAvatar(features.getAvatarName(avatID)))
+
 # Horizontal Bar Plot
-plt.bar(x, y)
- 
-# Show Plot
-plt.show()
+fig = px.bar(x=tabX, y=tabY)
+st.plotly_chart(fig)
+fig.show()
