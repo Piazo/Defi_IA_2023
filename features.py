@@ -103,7 +103,6 @@ def rearrangeCol(bonOrdre, aFaire):
         df[col] = aFaire[col].tolist()
     return df
 
-
 # Add the request_order column to the inputted dataframe
 def addOrderRequest(df):
     df = df.rename(columns={"Unnamed: 0":"ind"})
@@ -123,14 +122,10 @@ def addOrderRequest(df):
     df = df.drop(['ind'], axis=1)
     return df
 
-
-
 # Add the hotel features on the inputted dataframe
 def prepareDataframe(df):
     hotels = pd.read_csv('./data/features_hotels.csv', index_col=['hotel_id', 'city'])
     return df.join(hotels, on=['hotel_id', 'city'])
-
-
 
 def reinitializeData(doInit = False):
     if doInit: 
@@ -250,9 +245,9 @@ def stGenRequest():
     if st.button("Generate requests"):
             generateRequest(nbReq, avatarGen, langGen, cityGen, dayGen, deviceGen)
 
-def stPlotting():
+def plotAvatarInfo(df):
     # import plotly.express as px
-    df = pd.read_csv("./data/allData.csv")
+    
 
     # print(df)
     avID=pd.unique(df["avatar_id"])
@@ -263,5 +258,44 @@ def stPlotting():
         tabY.append(getMinDayOfAvatar(getAvatarName(avatID)))
 
     # Horizontal Bar Plot
-    fig = px.bar(x=tabX, y=tabY)
+    fig = px.bar(x=tabX, y=tabY, labels=dict(x="Avatar name", y="Date"))
     st.plotly_chart(fig)
+
+def plotPriceInfo(df):
+    listHotel = list(pd.unique(df["hotel_id"]))
+    listHotel.sort()
+    choice = st.sidebar.selectbox("Tu veux plot quoi maggle ?", listHotel)
+    dfHotel = df[df["hotel_id"] == choice]
+    st.dataframe(df)
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        byLang = dfHotel.groupby(["language"])["price"].agg('mean').reset_index().sort_values(by=['price'])
+        st.plotly_chart(px.bar(byLang, x="language", y="price", labels=dict(x="langage", y="price")))
+
+        byDate = dfHotel.groupby(["date"])["price"].agg('mean').reset_index().sort_values(by=['price'])
+        st.plotly_chart(px.bar(byDate, x="date", y="price", labels=dict(x="date", y="price")))
+
+    with col2:
+        byStock = dfHotel.groupby(["stock"])["price"].agg('mean').reset_index().sort_values(by=['price'])
+        st.plotly_chart(px.bar(byStock, x="stock", y="price", labels=dict(x="stock", y="price")))
+
+        #TODO: link les avatar id a leur nom et display par nom
+        byAvatar = dfHotel.groupby(["avatar_id"])["price"].agg('mean').reset_index().sort_values(by=['price'])
+        idAvatar = pd.read_csv('./Data/AvatarNameAndID.csv')
+        idAvatar = idAvatar[["avatar_name", "avatar_id"]]
+        print(idAvatar)
+        # dictTest = idAvatar.to_dict("avatar_id")
+        # print(dictTest)
+        # st.plotly_chart(px.bar(byAvatar, x="avatar_id", y="price", labels=dict(x="avatar_id", y="price")))
+
+def stPlotting():
+    st.header("Decide what you want to plot")
+    df = pd.read_csv("./data/allData.csv")
+    wtp = ["What to plot ?", "Avatar information", "Price"]
+    choice = st.sidebar.selectbox("Tu veux plot quoi maggle ?", wtp)
+    if choice == wtp[1]:
+        plotAvatarInfo(df)
+    if choice == wtp[2]:
+        plotPriceInfo(df)
