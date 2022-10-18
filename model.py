@@ -71,11 +71,11 @@ def regression(pred = False):
     print("\nAvec un score MSE = ", minScore)
     """
     
-    print(df.columns)
+    # print(df.columns)
 
     bestModel = RandomForestRegressor(max_depth=31, min_samples_leaf=1, random_state=0).fit(X_train_transformed, y_train)
-
-
+    currentScore = mean_squared_error(y_test, bestModel.predict(X_test_transformed))
+    print(currentScore)
     # On génère le csv pour Kaggle
     if(pred == True):
 
