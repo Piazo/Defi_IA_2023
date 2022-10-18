@@ -11,11 +11,12 @@ user_id = '18fcee0f-416b-4fd4-8fce-58c7d2030f43'
 
 
 def createAvatar(nameAvatar):
+    print("Creating the avatar ", nameAvatar)
     r = requests.post(path(f'avatars/{user_id}/{nameAvatar}'))
     features.addRequest("requests.post(path(f'avatars/{user_id}/{nameAvatar}'")
     features.addAvatar(nameAvatar)
     features.addResponseHistory(r)
-    print(r)
+    print("Avatar created")
 
 # Usefull if we lose all the data, i hope it won't happen lol
 def get_avatar():
@@ -50,5 +51,5 @@ def main(create_avatar = False, doARequest = False):
         if doARequest: pricingRequest(avatar, language, city, date, mobile)
 
 if __name__=="__main__":
-    main(False, True)
+    main(False, False)
 

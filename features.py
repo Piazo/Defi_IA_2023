@@ -2,6 +2,12 @@ import numpy as np
 import pandas as pd
 import appendAllDataframes
 import re
+import streamlit as st
+import random
+import math
+import plotly.express as px
+import makeRequest
+
 
 def initData():
     np.save('./data/language.npy', ['romanian', 'swedish', 'maltese', 'belgian', 'luxembourgish', 
@@ -56,6 +62,8 @@ def deleteLastRequest():
     np.save('./data/responseHistory.npy', getAllResponses()[0:len(getAllResponses())-1])
     print("Deleted last request !")
 
+
+
 def createAvatarIDcsv():
     req = getAllRequests()
     resp = getAllResponses()
@@ -76,12 +84,12 @@ def createAvatarIDcsv():
     pd.DataFrame({"avatar_name":listName, "avatar_id":listID}).to_csv("./data/AvatarNameAndID.csv")
     print("AvatarNameAndID.csv saved !")
 
+
 def getAvatarName(id):
     dfAvatarID = pd.read_csv('./data/AvatarNameAndID.csv')
     return pd.unique(dfAvatarID[dfAvatarID["avatar_id"] == id]["avatar_name"])[0]
 
 def getMinDayOfAvatar(avatarName):
-    appendAllDataframes.appendDf()
     dfAvatarID = pd.read_csv('./data/AvatarNameAndID.csv')
     df = pd.read_csv("./data/allData.csv")
     # On recupere l'ID associe, au nom de l'avatar puis on le met en string et on garde a partir du 5eme carac
@@ -96,7 +104,6 @@ def rearrangeCol(bonOrdre, aFaire):
     for col in listColOrdre:
         df[col] = aFaire[col].tolist()
     return df
-
 
 # Add the request_order column to the inputted dataframe
 def addOrderRequest(df):
@@ -117,17 +124,12 @@ def addOrderRequest(df):
     df = df.drop(['ind'], axis=1)
     return df
 
-
-
 # Add the hotel features on the inputted dataframe
 def prepareDataframe(df):
     hotels = pd.read_csv('./data/features_hotels.csv', index_col=['hotel_id', 'city'])
     return df.join(hotels, on=['hotel_id', 'city'])
 
-
-
-def main(doInit = False):
-    print("capasse")
+def reinitializeData(doInit = False):
     if doInit: 
         #Validation part
         while True:
@@ -150,5 +152,181 @@ def main(doInit = False):
         if doInit:
             initData()
 
-if __name__=="__main__":
-    main(False)
+# Function for the request creation
+def generateRequest(nbReq, avatarGen, langGen, cityGen, dayGen, deviceGen):
+    print("Generating requests...")
+    tabReq = []
+    dayGenForLoop = np.linspace(dayGen[0], dayGen[1], nbReq)
+    dayGenForLoop = [round(x) for x in dayGenForLoop]
+    try:
+        for i in range(nbReq):
+            tabReq.append([random.choice(avatarGen), random.choice(langGen), random.choice(cityGen), dayGenForLoop[i], random.choice(deviceGen)])
+    except:
+        pass
+    np.save('./data/request.npy', tabReq)
+    st.write("Request generated :")
+    for i in range(0, math.floor(len(tabReq)), 3):
+        try:
+            st.markdown(str(tabReq[i])+str(tabReq[i+1])+str(tabReq[i+2]))
+        except:
+            try:
+                st.markdown(str(tabReq[i])+str(tabReq[i+1]))
+            except:
+                st.markdown(str(tabReq[i]))
+
+# Front for the request creation
+def stGenRequest():
+    if st.sidebar.checkbox("Random request generator"):
+        avatarList = getAllAvatar()
+        fromNb = st.number_input("From which avatar ?", min_value=1)
+        toNb = st.number_input("To which avatar ?", min_value=1)
+        avatarList = avatarList[fromNb-1:toNb]
+        if st.button("Generate requests"):
+            listReq = []
+            for avatar in avatarList:
+                listReq.append([avatar, random.choice(getAllLanguage()), 
+                                random.choice(getAllCity()), random.choice(getAllDate()), 
+                                random.choice([0,1])])
+            st.write(listReq)
+            np.save('./data/request.npy', listReq)
+
+    else:
+        col1, col2, col3, col4 = st.columns([1,1,1,2])
+        with col3:
+            #Number of request to generate
+            nbReq = st.number_input("How many request ?", min_value=1)
+
+        col1, col2, col3, col4, col5 = st.columns(5)
+        with col1:
+            #option on avatar
+            optAvatar = st.selectbox(
+                'Avatar selection mode',
+                ('All avatar randomly', 'Avatar selection'))
+            if optAvatar != "All avatar randomly":
+                avatarGen = st.multiselect(
+                    'Generate request for which avatar ?',
+                    getAllAvatar())
+            else:
+                avatarGen = list(getAllAvatar())
+
+        with col2:
+            #option on avatar
+            optLangage = st.selectbox(
+                'Language selection mode',
+                ('All language randomly', 'Language selection'))
+            if optLangage != "All language randomly":
+                langGen = st.multiselect(
+                    'Generate request for which language ?',
+                    getAllLanguage())
+            else:
+                langGen = list(getAllLanguage())
+
+        with col3:
+            #option on avatar
+            optCity = st.selectbox(
+                'City selection mode',
+                ('All city randomly', 'City selection'))
+            if optCity != "All city randomly":
+                cityGen = st.multiselect(
+                    'Generate request for which city ?',getAllCity())
+            else:
+                cityGen = list(getAllCity())
+
+        with col4:
+            #option on avatar
+            optDay = st.selectbox(
+                'Day selection mode',
+                ('Full interval', 'Day interval selection'))
+            if optDay != "Full interval":
+                dayFrom = int(st.selectbox(
+                    "Start from ?",
+                    getAllDate()))
+                dayTo = int(st.selectbox(
+                    'to ?',
+                    getAllDate()))
+                dayGen = [dayFrom, dayTo]
+            else:
+                dayGen = [44,0]
+
+        with col5:
+            #option on device, 1 is for mobile, 0 is for computer
+            optMob = st.selectbox(
+                'Device selection mode',
+                ('Random', 'Mobile only', 'Computer only'))
+            if optMob == "Mobile only":
+                deviceGen = [1]
+            elif optMob == "Computer only":
+                deviceGen = [0]
+            else:
+                deviceGen = [0,1]
+        if st.button("Generate requests"):
+                generateRequest(nbReq, avatarGen, langGen, cityGen, dayGen, deviceGen)
+
+def plotAvatarInfo(df):
+    # import plotly.express as px
+    
+
+    # print(df)
+    avID=pd.unique(df["avatar_id"])
+    tabX= []
+    tabY = []
+    for avatID in avID:
+        tabX.append(getAvatarName(avatID))
+        tabY.append(getMinDayOfAvatar(getAvatarName(avatID)))
+
+    # Horizontal Bar Plot
+    fig = px.bar(x=tabX, y=tabY, labels=dict(x="Avatar name", y="Date"))
+    st.plotly_chart(fig)
+
+def plotPriceInfo(df):
+    listHotel = list(pd.unique(df["hotel_id"]))
+    listHotel.sort()
+    choice = st.sidebar.selectbox("Tu veux plot quoi maggle ?", listHotel)
+    dfHotel = df[df["hotel_id"] == choice]
+    st.dataframe(df)
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        byLang = dfHotel.groupby(["language"])["price"].agg('mean').reset_index().sort_values(by=['price'])
+        st.plotly_chart(px.bar(byLang, x="language", y="price", labels=dict(x="langage", y="price")))
+
+        byDate = dfHotel.groupby(["date"])["price"].agg('mean').reset_index().sort_values(by=['price'])
+        st.plotly_chart(px.bar(byDate, x="date", y="price", labels=dict(x="date", y="price")))
+
+    with col2:
+        byStock = dfHotel.groupby(["stock"])["price"].agg('mean').reset_index().sort_values(by=['price'])
+        st.plotly_chart(px.bar(byStock, x="stock", y="price", labels=dict(x="stock", y="price")))
+
+        #TODO: link les avatar id a leur nom et display par nom
+        byAvatar = dfHotel.groupby(["avatar_id"])["price"].agg('mean').reset_index().sort_values(by=['price'])
+        idAvatar = pd.read_csv('./Data/AvatarNameAndID.csv')
+        idAvatar = idAvatar[["avatar_name", "avatar_id"]]
+        print(idAvatar)
+        # dictTest = idAvatar.to_dict("avatar_id")
+        # print(dictTest)
+        # st.plotly_chart(px.bar(byAvatar, x="avatar_id", y="price", labels=dict(x="avatar_id", y="price")))
+
+def stPlotting():
+    st.header("Decide what you want to plot")
+    df = pd.read_csv("./data/allData.csv")
+    wtp = ["What to plot ?", "Avatar information", "Price"]
+    choice = st.sidebar.selectbox("Tu veux plot quoi maggle ?", wtp)
+    if choice == wtp[1]:
+        plotAvatarInfo(df)
+    if choice == wtp[2]:
+        plotPriceInfo(df)
+
+
+def stCreateAvatar():
+    avatarList = getAllAvatar()[-1:]
+    print(avatarList)
+    id = int(re.findall('[0-9]+', avatarList[0])[0])
+    nbAvToCreate = st.number_input("How many avatar do you want to create ?", min_value=1)
+    st.write("It will create avatar from ", id+1, " to ", id+nbAvToCreate)
+    if st.button("Generate requests"):
+        for i in range(nbAvToCreate):
+            idNb = id + i +1
+            nameAvatar = "Avataricard" + str(idNb)
+            makeRequest.createAvatar(nameAvatar)
+        createAvatarIDcsv()
