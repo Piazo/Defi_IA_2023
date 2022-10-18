@@ -58,11 +58,9 @@ def getAllDate():
     return np.load("./data/date.npy")
 
 def deleteLastRequest():
-    np.save('./data/requestHistory.npy', getAllRequests()[0:len(getAllRequests())-1])
-    np.save('./data/responseHistory.npy', getAllResponses()[0:len(getAllResponses())-1])
+    np.save('./data/requestHistory.npy', getAllRequests()[0:len(getAllRequests())-200])
+    np.save('./data/responseHistory.npy', getAllResponses()[0:len(getAllResponses())-200])
     print("Deleted last request !")
-
-
 
 def createAvatarIDcsv():
     req = getAllRequests()
@@ -185,7 +183,7 @@ def stGenRequest():
             listReq = []
             for avatar in avatarList:
                 listReq.append([avatar, random.choice(getAllLanguage()), 
-                                random.choice(getAllCity()), random.choice(getAllDate()), 
+                                random.choice(getAllCity()), int(random.choice(getAllDate())), 
                                 random.choice([0,1])])
             st.write(listReq)
             np.save('./data/request.npy', listReq)

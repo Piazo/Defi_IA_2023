@@ -12,8 +12,9 @@ def appendDf():
     print("Number of pricing requests found : ", len(indexPrincingRequest))
     requests = []
     print("Concatenating all responses to a single dataframe...")
+    resp = np.load('./data/responseHistory.npy',  allow_pickle=True)
     for index in indexPrincingRequest:
-        requests.append(np.load('./data/responseHistory.npy',  allow_pickle=True)[index])
+        requests.append(resp[index])
 
     for r in requests:
         pricing_requests.append(

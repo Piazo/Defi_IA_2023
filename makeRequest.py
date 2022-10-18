@@ -51,5 +51,5 @@ def main(create_avatar = False, doARequest = False):
         if doARequest: pricingRequest(avatar, language, city, date, mobile)
 
 if __name__=="__main__":
-    main(False, False)
+    main(False, True)
 
