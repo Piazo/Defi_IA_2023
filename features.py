@@ -6,7 +6,7 @@ import streamlit as st
 import random
 import math
 import plotly.express as px
-
+import makeRequest
 
 
 def initData():
@@ -61,6 +61,8 @@ def deleteLastRequest():
     np.save('./data/requestHistory.npy', getAllRequests()[0:len(getAllRequests())-1])
     np.save('./data/responseHistory.npy', getAllResponses()[0:len(getAllResponses())-1])
     print("Deleted last request !")
+
+
 
 def createAvatarIDcsv():
     req = getAllRequests()
@@ -174,76 +176,91 @@ def generateRequest(nbReq, avatarGen, langGen, cityGen, dayGen, deviceGen):
 
 # Front for the request creation
 def stGenRequest():
-    col1, col2, col3, col4 = st.columns([1,1,1,2])
-    with col3:
-        #Number of request to generate
-        nbReq = st.number_input("How many request ?", min_value=1)
+    if st.sidebar.checkbox("Random request generator"):
+        avatarList = getAllAvatar()
+        fromNb = st.number_input("From which avatar ?", min_value=1)
+        toNb = st.number_input("To which avatar ?", min_value=1)
+        avatarList = avatarList[fromNb-1:toNb]
+        if st.button("Generate requests"):
+            listReq = []
+            for avatar in avatarList:
+                listReq.append([avatar, random.choice(getAllLanguage()), 
+                                random.choice(getAllCity()), random.choice(getAllDate()), 
+                                random.choice([0,1])])
+            st.write(listReq)
+            np.save('./data/request.npy', listReq)
 
-    col1, col2, col3, col4, col5 = st.columns(5)
-    with col1:
-        #option on avatar
-        optAvatar = st.selectbox(
-            'Avatar selection mode',
-            ('All avatar randomly', 'Avatar selection'))
-        if optAvatar != "All avatar randomly":
-            avatarGen = st.multiselect(
-                'Generate request for which avatar ?',
-                getAllAvatar())
-        else:
-            avatarGen = list(getAllAvatar())
+    else:
+        col1, col2, col3, col4 = st.columns([1,1,1,2])
+        with col3:
+            #Number of request to generate
+            nbReq = st.number_input("How many request ?", min_value=1)
 
-    with col2:
-        #option on avatar
-        optLangage = st.selectbox(
-            'Language selection mode',
-            ('All language randomly', 'Language selection'))
-        if optLangage != "All language randomly":
-            langGen = st.multiselect(
-                'Generate request for which language ?',
-                getAllLanguage())
-        else:
-            langGen = list(getAllLanguage())
+        col1, col2, col3, col4, col5 = st.columns(5)
+        with col1:
+            #option on avatar
+            optAvatar = st.selectbox(
+                'Avatar selection mode',
+                ('All avatar randomly', 'Avatar selection'))
+            if optAvatar != "All avatar randomly":
+                avatarGen = st.multiselect(
+                    'Generate request for which avatar ?',
+                    getAllAvatar())
+            else:
+                avatarGen = list(getAllAvatar())
 
-    with col3:
-        #option on avatar
-        optCity = st.selectbox(
-            'City selection mode',
-            ('All city randomly', 'City selection'))
-        if optCity != "All city randomly":
-            cityGen = st.multiselect(
-                'Generate request for which city ?',getAllCity())
-        else:
-            cityGen = list(getAllCity())
+        with col2:
+            #option on avatar
+            optLangage = st.selectbox(
+                'Language selection mode',
+                ('All language randomly', 'Language selection'))
+            if optLangage != "All language randomly":
+                langGen = st.multiselect(
+                    'Generate request for which language ?',
+                    getAllLanguage())
+            else:
+                langGen = list(getAllLanguage())
 
-    with col4:
-        #option on avatar
-        optDay = st.selectbox(
-            'Day selection mode',
-            ('Full interval', 'Day interval selection'))
-        if optDay != "Full interval":
-            dayFrom = int(st.selectbox(
-                "Start from ?",
-                getAllDate()))
-            dayTo = int(st.selectbox(
-                'to ?',
-                getAllDate()))
-            dayGen = [dayFrom, dayTo]
-        else:
-            dayGen = [44,0]
+        with col3:
+            #option on avatar
+            optCity = st.selectbox(
+                'City selection mode',
+                ('All city randomly', 'City selection'))
+            if optCity != "All city randomly":
+                cityGen = st.multiselect(
+                    'Generate request for which city ?',getAllCity())
+            else:
+                cityGen = list(getAllCity())
 
-    with col5:
-        #option on device, 1 is for mobile, 0 is for computer
-        optMob = st.selectbox(
-            'Device selection mode',
-            ('Random', 'Mobile only', 'Computer only'))
-        if optMob == "Mobile only":
-            deviceGen = [1]
-        elif optMob == "Computer only":
-            deviceGen = [0]
-        else:
-            deviceGen = [0,1]
-    if st.button("Generate requests"):
-            generateRequest(nbReq, avatarGen, langGen, cityGen, dayGen, deviceGen)
+        with col4:
+            #option on avatar
+            optDay = st.selectbox(
+                'Day selection mode',
+                ('Full interval', 'Day interval selection'))
+            if optDay != "Full interval":
+                dayFrom = int(st.selectbox(
+                    "Start from ?",
+                    getAllDate()))
+                dayTo = int(st.selectbox(
+                    'to ?',
+                    getAllDate()))
+                dayGen = [dayFrom, dayTo]
+            else:
+                dayGen = [44,0]
+
+        with col5:
+            #option on device, 1 is for mobile, 0 is for computer
+            optMob = st.selectbox(
+                'Device selection mode',
+                ('Random', 'Mobile only', 'Computer only'))
+            if optMob == "Mobile only":
+                deviceGen = [1]
+            elif optMob == "Computer only":
+                deviceGen = [0]
+            else:
+                deviceGen = [0,1]
+        if st.button("Generate requests"):
+                generateRequest(nbReq, avatarGen, langGen, cityGen, dayGen, deviceGen)
 
 def plotAvatarInfo(df):
     # import plotly.express as px
@@ -299,3 +316,17 @@ def stPlotting():
         plotAvatarInfo(df)
     if choice == wtp[2]:
         plotPriceInfo(df)
+
+
+def stCreateAvatar():
+    avatarList = getAllAvatar()[-1:]
+    print(avatarList)
+    id = int(re.findall('[0-9]+', avatarList[0])[0])
+    nbAvToCreate = st.number_input("How many avatar do you want to create ?", min_value=1)
+    st.write("It will create avatar from ", id+1, " to ", id+nbAvToCreate)
+    if st.button("Generate requests"):
+        for i in range(nbAvToCreate):
+            idNb = id + i +1
+            nameAvatar = "Avataricard" + str(idNb)
+            makeRequest.createAvatar(nameAvatar)
+        createAvatarIDcsv()
