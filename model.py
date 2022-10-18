@@ -51,14 +51,15 @@ def regression(pred = False):
 
     # Meilleur Score :  i =  128 j =  32
 
-    """
+    
     minScore = 4000 
+    max_depth = 0
     bestModel = RandomForestRegressor()
 
-    for i in range(29, 41):
-        for j in range(1, 5):
-            clf = RandomForestRegressor(max_depth=i, min_samples_leaf=j, random_state=0).fit(X_train_transformed, y_train)
+    for i in range(40, 60):
+            clf = RandomForestRegressor(max_depth=i, min_samples_leaf=1, random_state=0).fit(X_train_transformed, y_train)
             currentScore = mean_squared_error(y_test, clf.predict(X_test_transformed))
+            print(i, currentScore)
             ##print("MSE score pour i = ", i, "  --->  ", currentScore)
             if currentScore < minScore:
                 minScore = currentScore
@@ -69,14 +70,14 @@ def regression(pred = False):
     print("\nRésultat trouvé : max min samples = ", bestModel.min_samples_leaf)
 
     print("\nAvec un score MSE = ", minScore)
-    """
+    
     
     # print(df.columns)
 
-    bestModel = RandomForestRegressor(max_depth=31, min_samples_leaf=1, random_state=0).fit(X_train_transformed, y_train)
-    currentScore = mean_squared_error(y_test, bestModel.predict(X_test_transformed))
-    print(currentScore)
-    # On génère le csv pour Kaggle
+    # bestModel = RandomForestRegressor(max_depth=31, min_samples_leaf=1, random_state=0).fit(X_train_transformed, y_train)
+    # currentScore = mean_squared_error(y_test, bestModel.predict(X_test_transformed))
+    # print(currentScore)
+    # # On génère le csv pour Kaggle
     if(pred == True):
 
         # On traite les données de test_set.csv

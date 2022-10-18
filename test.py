@@ -80,5 +80,11 @@ On va utiliser du STACKING lorsque qu'on a plusieurs modeles que l'on va avoir e
 
 
 
+Pour la cross validation on peut utiliser validation_curve()
 
+Trouver les meilleurs param avec GridSearchCV
+
+Regarder la confuision_matrix
+
+Pour voir si il est utile de continuer a augmenter la taille des données : learning_curve()
 """
