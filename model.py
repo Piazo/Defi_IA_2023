@@ -9,6 +9,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import make_column_transformer
+from numba import jit, cuda
 from sklearn.ensemble import RandomForestRegressor
 
 
@@ -17,10 +18,9 @@ def regression(pred = False):
 
     # On récupère le dataFrame
     df = features.addOrderRequest(pd.read_csv("./data/allData.csv"))
-    df = df[~(df['avatar_id']==132)]
-    df.to_csv('test.csv')
+    
     # On enlève la première colonne, et on enlève l'avatar et le request order pour l'instant
-    # df = df.drop(columns=["avatar_id"])
+    df = df.drop(columns=["avatar_id"])
 
     # On rajoute les attributs propre aux hôtels
     df = features.prepareDataframe(df)
@@ -46,6 +46,7 @@ def regression(pred = False):
     scaler = StandardScaler().fit(X_train)
     X_train_transformed = scaler.transform(X_train)
     X_test_transformed = scaler.transform(X_test)
+ 
     ## Création du modèle !
 
     # Meilleur Score :  i =  128 j =  32
@@ -55,15 +56,15 @@ def regression(pred = False):
     max_depth = 0
     bestModel = RandomForestRegressor()
 
-    # for i in range(40, 60):
-    #         clf = RandomForestRegressor(max_depth=i, min_samples_leaf=1, random_state=0).fit(X_train_transformed, y_train)
-    #         currentScore = mean_squared_error(y_test, clf.predict(X_test_transformed))
-    #         print(i, currentScore)
-    #         ##print("MSE score pour i = ", i, "  --->  ", currentScore)
-    #         if currentScore < minScore:
-    #             minScore = currentScore
-    #             max_depth = i          
-    #             bestModel = clf 
+    for i in range(40, 60):
+            clf = RandomForestRegressor(max_depth=i, min_samples_leaf=1, random_state=0).fit(X_train_transformed, y_train)
+            currentScore = mean_squared_error(y_test, clf.predict(X_test_transformed))
+            print(i, currentScore)
+            ##print("MSE score pour i = ", i, "  --->  ", currentScore)
+            if currentScore < minScore:
+                minScore = currentScore
+                max_depth = i          
+                bestModel = clf 
 
     print("\nRésultat trouvé : max depth = ", bestModel.max_depth)
     print("\nRésultat trouvé : max min samples = ", bestModel.min_samples_leaf)
@@ -73,15 +74,15 @@ def regression(pred = False):
     
     # print(df.columns)
 
-    bestModel = RandomForestRegressor(max_depth=41, min_samples_leaf=1, random_state=0).fit(X_train_transformed, y_train)
-    currentScore = mean_squared_error(y_test, bestModel.predict(X_test_transformed))
-    print(currentScore)
+    # bestModel = RandomForestRegressor(max_depth=31, min_samples_leaf=1, random_state=0).fit(X_train_transformed, y_train)
+    # currentScore = mean_squared_error(y_test, bestModel.predict(X_test_transformed))
+    # print(currentScore)
     # # On génère le csv pour Kaggle
     if(pred == True):
 
         # On traite les données de test_set.csv
         test_data = pd.read_csv("./data/test_set.csv")
-        test_data = test_data.drop(columns=["index"])
+        test_data = test_data.drop(columns=["index", "avatar_id"])
         # On ajoute les caractéristiques des hôtels
         test_data = features.prepareDataframe(test_data)
         # On encode les données non numériques avec OneHotEncoder
@@ -115,4 +116,4 @@ def regression(pred = False):
 
 
 if __name__=="__main__":
-    regression(pred = True)
+    regression(pred = False)
