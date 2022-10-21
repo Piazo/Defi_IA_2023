@@ -56,27 +56,27 @@ def regression(pred = False):
     max_depth = 0
     bestModel = RandomForestRegressor()
 
-    for i in range(40, 60):
-            clf = RandomForestRegressor(max_depth=i, min_samples_leaf=1, random_state=0).fit(X_train_transformed, y_train)
-            currentScore = mean_squared_error(y_test, clf.predict(X_test_transformed))
-            print(i, currentScore)
-            ##print("MSE score pour i = ", i, "  --->  ", currentScore)
-            if currentScore < minScore:
-                minScore = currentScore
-                max_depth = i          
-                bestModel = clf 
+    # for i in range(40, 60):
+    #         clf = RandomForestRegressor(max_depth=i, min_samples_leaf=1, random_state=0).fit(X_train_transformed, y_train)
+    #         currentScore = mean_squared_error(y_test, clf.predict(X_test_transformed))
+    #         print(i, currentScore)
+    #         ##print("MSE score pour i = ", i, "  --->  ", currentScore)
+    #         if currentScore < minScore:
+    #             minScore = currentScore
+    #             max_depth = i          
+    #             bestModel = clf 
 
-    print("\nRésultat trouvé : max depth = ", bestModel.max_depth)
-    print("\nRésultat trouvé : max min samples = ", bestModel.min_samples_leaf)
+    # print("\nRésultat trouvé : max depth = ", bestModel.max_depth)
+    # print("\nRésultat trouvé : max min samples = ", bestModel.min_samples_leaf)
 
-    print("\nAvec un score MSE = ", minScore)
+    # print("\nAvec un score MSE = ", minScore)
     
     
     # print(df.columns)
 
-    # bestModel = RandomForestRegressor(max_depth=31, min_samples_leaf=1, random_state=0).fit(X_train_transformed, y_train)
-    # currentScore = mean_squared_error(y_test, bestModel.predict(X_test_transformed))
-    # print(currentScore)
+    bestModel = RandomForestRegressor(max_depth=45, min_samples_leaf=1, random_state=0).fit(X_train_transformed, y_train)
+    currentScore = mean_squared_error(y_test, bestModel.predict(X_test_transformed))
+    print(currentScore)
     # # On génère le csv pour Kaggle
     if(pred == True):
 
@@ -116,4 +116,4 @@ def regression(pred = False):
 
 
 if __name__=="__main__":
-    regression(pred = False)
+    regression(pred = True)

@@ -8,6 +8,8 @@ import math
 import plotly.express as px
 import makeRequest
 
+#Leur score 19.73945
+
 
 def initData():
     np.save('./data/language.npy', ['romanian', 'swedish', 'maltese', 'belgian', 'luxembourgish', 
