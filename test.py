@@ -15,14 +15,14 @@ import csv
 from sklearn.neural_network import MLPRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.preprocessing import StandardScaler, OneHotEncoder, Normalizer, MinMaxScaler
 from sklearn.compose import make_column_transformer
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.ensemble import VotingRegressor
 from sklearn.ensemble import BaggingClassifier, RandomForestClassifier
 
 from sklearn.ensemble import AdaBoostClassifier, GradientBoostingClassifier
-from sklearn.ensemble import StackingClassifier
+from sklearn.tree import DecisionTreeRegressor
 
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import KFold
@@ -54,24 +54,33 @@ def testModel():
     X_train, X_test, y_train, y_test = train_test_split(df, y, test_size=0.2, random_state=42)
 
     # On standardise les données
-    scaler = StandardScaler().fit(X_train)
+    scaler = MinMaxScaler().fit(X_train)
     X_train_transformed = scaler.transform(X_train)
     X_test_transformed = scaler.transform(X_test)
 
-    # mod1 = RandomForestRegressor(max_depth=45, min_samples_leaf=1, random_state=0)
-
-    # mod2 = MLPRegressor(hidden_layer_sizes=(16,16,16,16,16,1), random_state=0, max_iter=3000)
+    mod1 = DecisionTreeRegressor(min_samples_split=5)
+    mod2 = RandomForestRegressor(max_depth=57, min_samples_leaf=1, random_state=0)
     
-    for i in range(1,20):
-        tabNeur = []
-        for j in range(1, i):
-            tabNeur.append(10)
-        tabNeur.append(1)
-        print(tabNeur)
-        mod2 = MLPRegressor(hidden_layer_sizes=tabNeur, random_state=0, max_iter=3000)
-        mod2.fit(X_train_transformed, y_train)
-        score = mean_squared_error(y_test, mod2.predict(X_test_transformed))
-        print(tabNeur, score)
+    bestMod = VotingRegressor([ ('DecisionTreeRegressor', mod1),
+                                ('RandomForestRegressor', mod2),],
+                                n_jobs=-1)
+
+    for mod in (mod1, mod2, bestMod):
+        mod.fit(X_train_transformed, y_train)
+        score = mean_squared_error(y_test, mod.predict(X_test_transformed))
+        print(mod.__class__.__name__, mod.score(X_test_transformed, y_test), " score : ", score)
+
+
+    # for i in range(1,20):
+    #     tabNeur = []
+    #     for j in range(1, i):
+    #         tabNeur.append(10)
+    #     tabNeur.append(1)
+    #     print(tabNeur)
+    #     mod2 = MLPRegressor(hidden_layer_sizes=tabNeur, random_state=0, max_iter=3000)
+    #     mod2.fit(X_train_transformed, y_train)
+    #     score = mean_squared_error(y_test, mod2.predict(X_test_transformed))
+    #     print(tabNeur, score)
 
 
     # mod3 = KNeighborsClassifier(n_neighbors=2)

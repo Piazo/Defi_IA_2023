@@ -10,7 +10,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import make_column_transformer
 from sklearn.ensemble import RandomForestRegressor
-
+from sklearn.tree import DecisionTreeRegressor
 
 
 def regression(pred = False):
@@ -72,10 +72,20 @@ def regression(pred = False):
     
     
     # print(df.columns)
+    for i in range(2,10):
+        bestModel = DecisionTreeRegressor(min_samples_split=i).fit(X_train_transformed, y_train)
+        currentScore = mean_squared_error(y_test, bestModel.predict(X_test_transformed))
+        print(i,currentScore)
 
-    bestModel = RandomForestRegressor(max_depth=45, min_samples_leaf=1, random_state=0).fit(X_train_transformed, y_train)
-    currentScore = mean_squared_error(y_test, bestModel.predict(X_test_transformed))
-    print(currentScore)
+    # bestModel = RandomForestRegressor(max_depth=57, min_samples_leaf=1, random_state=0).fit(X_train_transformed, y_train)
+    # currentScore = mean_squared_error(y_test, bestModel.predict(X_test_transformed))
+    # print(i,currentScore)
+
+
+    mod1 = DecisionTreeRegressor(min_samples_split=5)
+    mod2 = RandomForestRegressor(max_depth=57, min_samples_leaf=1, random_state=0)
+
+
     # # On génère le csv pour Kaggle
     if(pred == True):
 
@@ -115,4 +125,4 @@ def regression(pred = False):
 
 
 if __name__=="__main__":
-    regression(pred = True)
+    regression(pred = False)
