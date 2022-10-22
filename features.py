@@ -8,6 +8,8 @@ import math
 import plotly.express as px
 import makeRequest
 
+#Leur score 19.73945
+
 
 def initData():
     np.save('./data/language.npy', ['romanian', 'swedish', 'maltese', 'belgian', 'luxembourgish', 
@@ -178,12 +180,24 @@ def stGenRequest():
         avatarList = getAllAvatar()
         fromNb = st.number_input("From which avatar ?", min_value=1)
         toNb = st.number_input("To which avatar ?", min_value=1)
+        reqNb = st.number_input("How many resquest per avatar ?", min_value=1)
+        tabAllDates = getAllDate()
         avatarList = avatarList[fromNb-1:toNb]
         if st.button("Generate requests"):
+            print(reqNb)
             listReq = []
             for avatar in avatarList:
-                listReq.append([avatar, random.choice(getAllLanguage()), 
-                                random.choice(getAllCity()), int(random.choice(getAllDate())), 
+                tabDate = []
+                for i in range(reqNb):
+                    print(i)
+                    tabDate.append(int(random.choice(tabAllDates)))
+                    print(tabDate)
+                tabDate.sort(reverse=True)
+                print(tabDate)
+
+                for date in tabDate:
+                    listReq.append([avatar, random.choice(getAllLanguage()), 
+                                random.choice(getAllCity()), date, 
                                 random.choice([0,1])])
             st.write(listReq)
             np.save('./data/request.npy', listReq)
