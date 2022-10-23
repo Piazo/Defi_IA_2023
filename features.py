@@ -6,10 +6,15 @@ import streamlit as st
 import random
 import math
 import plotly.express as px
-import makeRequest
-
+import urllib.parse
+import requests
 #Leur score 19.73945
 
+domain = "51.91.251.0"
+port = 3000
+host = f"http://{domain}:{port}"
+path = lambda x: urllib.parse.urljoin(host, x)
+user_id = '18fcee0f-416b-4fd4-8fce-58c7d2030f43'
 
 def initData():
     np.save('./data/language.npy', ['romanian', 'swedish', 'maltese', 'belgian', 'luxembourgish', 
@@ -184,16 +189,12 @@ def stGenRequest():
         tabAllDates = getAllDate()
         avatarList = avatarList[fromNb-1:toNb]
         if st.button("Generate requests"):
-            print(reqNb)
             listReq = []
             for avatar in avatarList:
                 tabDate = []
                 for i in range(reqNb):
-                    print(i)
                     tabDate.append(int(random.choice(tabAllDates)))
-                    print(tabDate)
                 tabDate.sort(reverse=True)
-                print(tabDate)
 
                 for date in tabDate:
                     listReq.append([avatar, random.choice(getAllLanguage()), 
@@ -275,10 +276,6 @@ def stGenRequest():
                 generateRequest(nbReq, avatarGen, langGen, cityGen, dayGen, deviceGen)
 
 def plotAvatarInfo(df):
-    # import plotly.express as px
-    
-
-    # print(df)
     avID=pd.unique(df["avatar_id"])
     tabX= []
     tabY = []
@@ -329,16 +326,64 @@ def stPlotting():
     if choice == wtp[2]:
         plotPriceInfo(df)
 
+# Usefull if we lose all the data, i hope it won't happen lol
+def get_avatar():
+    r = requests.get(path(f"avatars/{user_id}"))
+    for avatar in r.json():
+        print(avatar['id'], avatar['name'])
+
+def createAvatar(nameAvatar):
+    print("Creating avatar ", nameAvatar)
+    r = requests.post(path(f'avatars/{user_id}/{nameAvatar}'))
+    addRequest("requests.post(path(f'avatars/{user_id}/{nameAvatar}'")
+    addAvatar(nameAvatar)
+    addResponseHistory(r)
+    print("Avatar created !")
 
 def stCreateAvatar():
     avatarList = getAllAvatar()[-1:]
-    print(avatarList)
     id = int(re.findall('[0-9]+', avatarList[0])[0])
     nbAvToCreate = st.number_input("How many avatar do you want to create ?", min_value=1)
     st.write("It will create avatar from ", id+1, " to ", id+nbAvToCreate)
-    if st.button("Generate requests"):
+    if st.button("Generate avatar"):
         for i in range(nbAvToCreate):
             idNb = id + i +1
             nameAvatar = "Avataricard" + str(idNb)
-            makeRequest.createAvatar(nameAvatar)
+            createAvatar(nameAvatar)
         createAvatarIDcsv()
+
+
+def pricingRequest(avatarName, language, city, date, mobile):
+    print("Starting pricing request...")
+    params = {
+        "avatar_name": avatarName,
+        "language": language,
+        "city": city,
+        "date": date,
+        "mobile": mobile,}
+    r = requests.get(path(f"pricing/{user_id}"), params=params)
+    addRequest('requests.get(path(f"pricing/{user_id}"), params='+str(params)+')')
+    addResponseHistory(r)
+    print("Pricing request done !")
+
+
+
+def stMakeRequest():
+    listReq = np.load("./data/request.npy")
+    st.write("Here is a sample of the request you are about to send :")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.write("head :", listReq[0:10])
+    with col2:
+        st.write("tail :", listReq[-10:])
+
+    col1, col2 = st.columns([1,4])
+    with col1:
+        if st.text_input("Make the request (type YES if you want to)") == "YES":
+            for req in listReq:
+                avatar = req[0]
+                language = req[1]
+                city = req[2]
+                date = req[3]
+                mobile = req[4]
+                pricingRequest(avatar, language, city, date, mobile)

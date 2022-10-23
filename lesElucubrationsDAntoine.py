@@ -2,22 +2,24 @@ import pandas as pd
 import features
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler, OneHotEncoder, Normalizer, MinMaxScaler, MaxAbsScaler
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, learning_curve
 
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.svm import LinearSVR
-from lightgbm import LGBMRegressor
+import lightgbm as lgb
 
 from sklearn.compose import make_column_transformer
 from sklearn.metrics import mean_squared_error
 
 import csv
+import matplotlib.pyplot as plt
+import numpy as np
 
 def testModel(pred = False):
     # On récupère le dataFrame et on prepare tout le bordel
-    # df = features.prepareDataframe(features.addOrderRequest(pd.read_csv("./data/allData.csv")))
-    # df.to_csv("ceciestuntest.csv")
+    df = features.prepareDataframe(features.addOrderRequest(pd.read_csv("./data/allData.csv")))
+    df.to_csv("ceciestuntest.csv")
     df = pd.read_csv('ceciestuntest.csv')
     df.drop(["Unnamed: 0"], axis=1, inplace=True)
 
@@ -37,20 +39,23 @@ def testModel(pred = False):
     transformed = columns_transfo.fit_transform(df).toarray()
     df = pd.DataFrame(transformed, columns=columns_transfo.get_feature_names_out())
 
+    df.to_csv('afterEncod.csv')
+
     # for category in encoder.categories_:
     #     print(category[:5])
 
-    X_train, X_test, y_train, y_test = train_test_split(df, y, test_size=0.2, random_state=0)
+    X_train, X_test, y_train, y_test = train_test_split(df, y, test_size=0.1, random_state=0)
 
     # On standardise les données
-    scaler = MinMaxScaler().fit(X_train)
+    scaler = StandardScaler().fit(X_train)
     X_train = scaler.transform(X_train)
     X_test = scaler.transform(X_test)
 
     # svm = LinearSVR()
     # svm.fit(X_train, y_train)
 
-    gbr = LGBMRegressor(n_estimators=50000, num_leaves=20)
+    #Meilleur resultat obtenu avec n_estimator = 10000 et num_leaves=40
+    gbr = lgb.LGBMRegressor(n_estimators=10000, num_leaves=50)
     gbr.fit(X_train, y_train)
 
     # model = RandomForestRegressor()
@@ -62,6 +67,15 @@ def testModel(pred = False):
     print("Train Score:", train_score)
     print("Test Score:", test_score)
 
+    # N, train_score2, val_score = learning_curve(gbr, X_train, y_train, cv=4, scoring='neg_root_mean_squared_error', train_sizes=np.linspace(0.1,1,10))
+
+    # plt.figure(figsize=(12,8))
+    # plt.plot(N, train_score2.mean(axis=1))
+    # plt.plot(N, val_score.mean(axis=1))
+    # plt.show()
+
+    # lgb.plot_importance(gbr, max_num_features=10)
+    # plt.show()
 
     if(pred == True):
 
@@ -78,7 +92,7 @@ def testModel(pred = False):
         test_data = pd.DataFrame(transformed, columns=columns_transfo.get_feature_names_out())
 
         test_data = features.rearrangeCol(df, test_data)
-        print(test_data.columns)
+        # print(test_data.columns)
         
         # On normalise les données en se basant sur le training set
         X_test_data_transformed = scaler.transform(test_data)
