@@ -54,7 +54,7 @@ def testModel(pred = False):
     # svm = LinearSVR()
     # svm.fit(X_train, y_train)
 
-    #Meilleur resultat obtenu avec n_estimator = 10000 et num_leaves=40
+    #Meilleur resultat obtenu avec n_estimator = 10000 et num_leaves=50
     gbr = lgb.LGBMRegressor(n_estimators=10000, num_leaves=50)
     gbr.fit(X_train, y_train)
 
