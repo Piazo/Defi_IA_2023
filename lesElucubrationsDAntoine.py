@@ -1,14 +1,16 @@
 import pandas as pd
 import features
 from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler, OneHotEncoder, Normalizer, MinMaxScaler, MaxAbsScaler
-from sklearn.model_selection import train_test_split, learning_curve
+from sklearn.preprocessing import StandardScaler, OneHotEncoder, Normalizer, MinMaxScaler, MaxAbsScaler, RobustScaler
+from sklearn.model_selection import train_test_split, learning_curve, KFold, cross_val_score
 from sklearn.feature_selection import SelectKBest, f_regression
 
+from sklearn.kernel_ridge import KernelRidge
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
-from sklearn.linear_model import LinearRegression, SGDRegressor, RANSACRegressor
+from sklearn.linear_model import LinearRegression, SGDRegressor, RANSACRegressor, ElasticNet, Lasso,  BayesianRidge, LassoLarsIC
 from sklearn.svm import LinearSVR
 import lightgbm as lgb
+import xgboost as xgb
 
 from sklearn.compose import make_column_transformer
 from sklearn.metrics import mean_squared_error
@@ -16,6 +18,66 @@ from sklearn.metrics import mean_squared_error
 import csv
 import matplotlib.pyplot as plt
 import numpy as np
+from sklearn.base import BaseEstimator, TransformerMixin, RegressorMixin, clone
+
+
+class StackingAveragedModels(BaseEstimator, RegressorMixin, TransformerMixin):
+    def __init__(self, base_models, meta_model, n_folds=5):
+        self.base_models = base_models
+        self.meta_model = meta_model
+        self.n_folds = n_folds
+   
+    # We again fit the data on clones of the original models
+    def fit(self, X, y):
+        self.base_models_ = [list() for x in self.base_models]
+        self.meta_model_ = clone(self.meta_model)
+        kfold = KFold(n_splits=self.n_folds, shuffle=True, random_state=156)
+        
+        # Train cloned base models then create out-of-fold predictions
+        # that are needed to train the cloned meta-model
+        out_of_fold_predictions = np.zeros((X.shape[0], len(self.base_models)))
+        for i, model in enumerate(self.base_models):
+            for train_index, holdout_index in kfold.split(X, y):
+                instance = clone(model)
+                self.base_models_[i].append(instance)
+                instance.fit(X[train_index], y[train_index])
+                y_pred = instance.predict(X[holdout_index])
+                out_of_fold_predictions[holdout_index, i] = y_pred
+                
+        # Now train the cloned  meta-model using the out-of-fold predictions as new feature
+        self.meta_model_.fit(out_of_fold_predictions, y)
+        return self
+   
+    #Do the predictions of all base models on the test data and use the averaged predictions as 
+    #meta-features for the final prediction which is done by the meta-model
+    def predict(self, X):
+        meta_features = np.column_stack([
+            np.column_stack([model.predict(X) for model in base_models]).mean(axis=1)
+            for base_models in self.base_models_ ])
+        return self.meta_model_.predict(meta_features)
+
+
+
+class AveragingModels(BaseEstimator, RegressorMixin, TransformerMixin):
+    def __init__(self, models):
+        self.models = models
+        
+    # we define clones of the original models to fit the data in
+    def fit(self, X, y):
+        self.models_ = [clone(x) for x in self.models]
+        
+        # Train cloned base models
+        for model in self.models_:
+            model.fit(X, y)
+        return self
+    
+    #Now we do the predictions for cloned models and average them
+    def predict(self, X):
+        predictions = np.column_stack([
+            model.predict(X) for model in self.models_
+        ])
+        return np.mean(predictions, axis=1) 
+
 
 def testModel(pred = False):
     # On récupère le dataFrame et on prepare tout le bordel
@@ -56,6 +118,42 @@ def testModel(pred = False):
 
     print("Feature data dimension: ", X_train.shape)
 
+    n_folds = 5
+    def rmsle_cv(model):
+        kf = KFold(n_folds, shuffle=True, random_state=42).get_n_splits(X_train)
+        rmse= np.sqrt(-cross_val_score(model, X_train, y_train, scoring="neg_mean_squared_error", cv = kf))
+        return(rmse)
+
+    ENet = make_pipeline(RobustScaler(), ElasticNet(alpha=0.0005, l1_ratio=.9, random_state=3))
+    score = rmsle_cv(ENet)
+    print("ElasticNet score: {:.4f} ({:.4f})\n".format(score.mean(), score.std()))
+
+    GBoost = GradientBoostingRegressor(n_estimators=3000, learning_rate=0.05,
+                                   max_depth=4, max_features='sqrt',
+                                   min_samples_leaf=15, min_samples_split=10, 
+                                   loss='huber', random_state =5)
+    score = rmsle_cv(GBoost)
+    print("Gradient Boosting score: {:.4f} ({:.4f})\n".format(score.mean(), score.std()))
+
+
+
+    KRR = KernelRidge(alpha=0.6, kernel='polynomial', degree=2, coef0=2.5)
+    score = rmsle_cv(KRR)
+    print("Kernel Ridge score: {:.4f} ({:.4f})\n".format(score.mean(), score.std()))
+
+    lasso = make_pipeline(RobustScaler(), Lasso(alpha =0.0005, random_state=1))
+    score = rmsle_cv(lasso)
+    print("\nLasso score: {:.4f} ({:.4f})\n".format(score.mean(), score.std()))
+
+
+    stacked_averaged_models = StackingAveragedModels(base_models = (ENet, GBoost, KRR),
+                                                    meta_model = lasso)
+
+    score = rmsle_cv(stacked_averaged_models)
+    print("Stacking Averaged models score: {:.4f} ({:.4f})".format(score.mean(), score.std()))
+
+
+
     # select = SelectKBest(score_func=f_regression, k=8)
     # z = select.fit_transform(X_train, y_train) 
     # filter = select.get_support()
@@ -69,28 +167,32 @@ def testModel(pred = False):
     # print(z) 
 
     # svm = LinearSVR()
-    # svm.fit(X_train, y_train)
 
     # model = RANSACRegressor()
-    # model.fit(X_train, y_train)
 
     # model = SGDRegressor(penalty='elasticnet')
-    # model.fit(X_train, y_train)
+
+    # model = xgb.XGBRegressor(max_depth=3, n_estimators=2200)
+    
 
     #Meilleur resultat obtenu avec n_estimator = 10000 et num_leaves=40
-    # model = lgb.LGBMRegressor(n_estimators=1000, num_leaves=30)
-    # model.fit(X_train, y_train)
+    # model = lgb.LGBMRegressor(num_leaves=40, n_estimators=10000)
 
-    model = GradientBoostingRegressor(n_estimators = 1000, max_depth=5)
-    model.fit(X_train, y_train)
+    # model = GradientBoostingRegressor(n_estimators = 1000, max_depth=5)
+
     # model = RandomForestRegressor()
+
+
     # model.fit(X_train, y_train)
 
-    train_score = mean_squared_error(y_train, model.predict(X_train))
-    test_score = mean_squared_error(y_test, model.predict(X_test))
+    # train_score = mean_squared_error(y_train, model.predict(X_train))
+    # test_score = mean_squared_error(y_test, model.predict(X_test))
     
-    print("Train Score:", train_score)
-    print("Test Score:", test_score)
+    # score = rmsle_cv(model)
+    # print("LGBM score: {:.4f} ({:.4f})\n" .format(score.mean(), score.std()))
+    
+    # print("Train Score:", train_score)
+    # print("Test Score:", test_score)
 
     # N, train_score2, val_score = learning_curve(model, X_train, y_train, cv=4, scoring='neg_root_mean_squared_error', train_sizes=np.linspace(0.1,1,10))
 
@@ -137,4 +239,4 @@ def testModel(pred = False):
             writer.writerows(data)
 
 
-testModel(True)
+testModel(False)
