@@ -1,5 +1,6 @@
 import pandas as pd
 import features
+from numba import jit, cuda
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler, OneHotEncoder, Normalizer, MinMaxScaler, MaxAbsScaler, RobustScaler
 from sklearn.model_selection import train_test_split, learning_curve, KFold, cross_val_score
@@ -87,7 +88,7 @@ def testModel(pred = False):
     df.drop(["Unnamed: 0"], axis=1, inplace=True)
 
     # on récupère la colonne cible, le prix, et on la supprime
-    y = df["price"].astype("float")
+    y = df["price"]
     df.drop(["price"], axis=1, inplace=True)
 
     # print(df.dtypes, y.dtypes)
@@ -154,6 +155,12 @@ def testModel(pred = False):
 
 
 
+################### GOAT PREDICTOR PR LE MOMENT ###################
+    # Meilleur resultat obtenu avec n_estimator = 10000 et num_leaves=40
+    model = lgb.LGBMRegressor(n_estimators=100000, num_leaves=40)
+    model.fit(X_train, y_train)
+###################################################################
+
     # select = SelectKBest(score_func=f_regression, k=8)
     # z = select.fit_transform(X_train, y_train) 
     # filter = select.get_support()
@@ -194,12 +201,12 @@ def testModel(pred = False):
     # print("Train Score:", train_score)
     # print("Test Score:", test_score)
 
-    # N, train_score2, val_score = learning_curve(model, X_train, y_train, cv=4, scoring='neg_root_mean_squared_error', train_sizes=np.linspace(0.1,1,10))
+    N, train_score2, val_score = learning_curve(model, X_train, y_train, cv=4, scoring='neg_root_mean_squared_error', train_sizes=np.linspace(0.1,1,10))
 
-    # plt.figure(figsize=(12,8))
-    # plt.plot(N, train_score2.mean(axis=1))
-    # plt.plot(N, val_score.mean(axis=1))
-    # plt.show()
+    plt.figure(figsize=(12,8))
+    plt.plot(N, train_score2.mean(axis=1))
+    plt.plot(N, val_score.mean(axis=1))
+    plt.show()
 
     # lgb.plot_importance(gbr, max_num_features=10)
     # plt.show()
