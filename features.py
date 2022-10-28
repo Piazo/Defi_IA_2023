@@ -8,7 +8,12 @@ import math
 import plotly.express as px
 import urllib.parse
 import requests
+
+
 #Leur score 19.73945
+# http://51.91.251.0:3000/remaining-requests/18fcee0f-416b-4fd4-8fce-58c7d2030f43
+
+# Faire des requetes randoms a partir de l'avatar 696
 
 domain = "51.91.251.0"
 port = 3000
@@ -75,16 +80,19 @@ def createAvatarIDcsv():
     listID = []
     listName = []
     for i in range(len(req)):
-        if "nameAvatar" in req[i]:
-            # Alors c'est le bordel mais en gros ca recupere le texte apres "id", 
-            # puis on garde juste les chiffres avant un autre caractere
-            # grace a cette belle expression reguliere  et ca donne l'ID c'est fabuleux
-            # Puis on met un indice 0 a la fin psk cest une liste et qu'on veut que le 1er elem
-            # et on le cast en integer pour avoir le bon format et GG
-            listID.append(int(re.findall(r"(\d+)[,}]", resp[i].text.split('"id":',1)[1])[0]))
-            # Alors la en gros on fait pareil mais on split deux fois et hopla magie
-            # On recupere le nom
-            listName.append(resp[i].text.split('"name":"',1)[1].split('"',1)[0])
+        try:
+            if "nameAvatar" in req[i]:
+                # Alors c'est le bordel mais en gros ca recupere le texte apres "id", 
+                # puis on garde juste les chiffres avant un autre caractere
+                # grace a cette belle expression reguliere  et ca donne l'ID c'est fabuleux
+                # Puis on met un indice 0 a la fin psk cest une liste et qu'on veut que le 1er elem
+                # et on le cast en integer pour avoir le bon format et GG
+                listID.append(int(re.findall(r"(\d+)[,}]", resp[i].text.split('"id":',1)[1])[0]))
+                # Alors la en gros on fait pareil mais on split deux fois et hopla magie
+                # On recupere le nom
+                listName.append(resp[i].text.split('"name":"',1)[1].split('"',1)[0])
+        except:
+            pass
     # Et on finit par exporter le bordel en csv
     pd.DataFrame({"avatar_name":listName, "avatar_id":listID}).to_csv("./data/AvatarNameAndID.csv")
     print("AvatarNameAndID.csv saved !")
@@ -333,24 +341,30 @@ def get_avatar():
         print(avatar['id'], avatar['name'])
 
 def createAvatar(nameAvatar):
-    print("Creating avatar ", nameAvatar)
+    st.write("Creating avatar " + nameAvatar)
     r = requests.post(path(f'avatars/{user_id}/{nameAvatar}'))
     addRequest("requests.post(path(f'avatars/{user_id}/{nameAvatar}'")
     addAvatar(nameAvatar)
     addResponseHistory(r)
-    print("Avatar created !")
+    st.write("Avatar created !")
 
 def stCreateAvatar():
+    # Recup le dernier avatar
     avatarList = getAllAvatar()[-1:]
+    # On va extraire le numero de cet avatar
     id = int(re.findall('[0-9]+', avatarList[0])[0])
+    # On demande cb d'avatar on veut creer
     nbAvToCreate = st.number_input("How many avatar do you want to create ?", min_value=1)
     st.write("It will create avatar from ", id+1, " to ", id+nbAvToCreate)
     if st.button("Generate avatar"):
         for i in range(nbAvToCreate):
+            st.write(i)
             idNb = id + i +1
             nameAvatar = "Avataricard" + str(idNb)
             createAvatar(nameAvatar)
+        st.write("OK on est la")
         createAvatarIDcsv()
+        st.write("avatar saved !")
 
 
 def pricingRequest(avatarName, language, city, date, mobile):
