@@ -81,84 +81,92 @@ class AveragingModels(BaseEstimator, RegressorMixin, TransformerMixin):
 
 
 def testModel(pred = False):
+
+####################### Preparation des dataframes #######################
     # On récupère le dataFrame et on prepare tout le bordel
     # df = features.prepareDataframe(features.addOrderRequest(pd.read_csv("./data/allData.csv")))
     # df.to_csv("ceciestuntest.csv")
+
     df = pd.read_csv('ceciestuntest.csv')
     df.drop(["Unnamed: 0"], axis=1, inplace=True)
 
     # on récupère la colonne cible, le prix, et on la supprime
     y = df["price"]
     df.drop(["price"], axis=1, inplace=True)
+###########################################################################
 
-    # print(df.dtypes, y.dtypes)
-    
-    """
-        encoder = OneHotEncoder()
-        X = encoder.fit_transform(df.values)
-    """
 
+####################### Encodage et standardisation des donnees #######################
     # Essayer d'encoder la col hotel_id
     columns_transfo = make_column_transformer(
         (OneHotEncoder(), ['brand', 'group', 'city', 'language']), 
         remainder='passthrough')
     transformed = columns_transfo.fit_transform(df).toarray()
     df = pd.DataFrame(transformed, columns=columns_transfo.get_feature_names_out())
-    # print(df.dtypes)
-    df.to_csv('afterEncod.csv')
-
-    # for category in encoder.categories_:
-    #     print(category[:5])
-
-    X_train, X_test, y_train, y_test = train_test_split(df, y, test_size=0.1, random_state=0)
+    X_train, X_test, y_train, y_test = train_test_split(df, y, test_size=0.95, random_state=0)
 
     # On standardise les données
     scaler = StandardScaler().fit(X_train)
     X_train = scaler.transform(X_train)
     X_test = scaler.transform(X_test)
+########################################################################################
 
-    print("Feature data dimension: ", X_train.shape)
-
+####################### Cross validation part #######################
     n_folds = 5
     def rmsle_cv(model):
         kf = KFold(n_folds, shuffle=True, random_state=42).get_n_splits(X_train)
         rmse= np.sqrt(-cross_val_score(model, X_train, y_train, scoring="neg_mean_squared_error", cv = kf))
         return(rmse)
+#####################################################################
+    """
+    TabModel = []
 
-    ENet = make_pipeline(RobustScaler(), ElasticNet(alpha=0.0005, l1_ratio=.9, random_state=3))
-    score = rmsle_cv(ENet)
-    print("ElasticNet score: {:.4f} ({:.4f})\n".format(score.mean(), score.std()))
+    print("Starting to process models...")
 
-    GBoost = GradientBoostingRegressor(n_estimators=3000, learning_rate=0.05,
+    enet = make_pipeline(RobustScaler(), ElasticNet(alpha=0.0005, l1_ratio=.9, random_state=3, max_iter=3000))
+    # TabModel.append(enet)
+
+    gboost = GradientBoostingRegressor(n_estimators=3000, learning_rate=0.05,
                                    max_depth=4, max_features='sqrt',
                                    min_samples_leaf=15, min_samples_split=10, 
                                    loss='huber', random_state =5)
-    score = rmsle_cv(GBoost)
-    print("Gradient Boosting score: {:.4f} ({:.4f})\n".format(score.mean(), score.std()))
+    # TabModel.append(gboost)
 
+    krr = KernelRidge(alpha=0.6, kernel='polynomial', degree=2, coef0=2.5)
+    # TabModel.append(krr)
 
+    svr = LinearSVR()
+    TabModel.append(svr)
 
-    KRR = KernelRidge(alpha=0.6, kernel='polynomial', degree=2, coef0=2.5)
-    score = rmsle_cv(KRR)
-    print("Kernel Ridge score: {:.4f} ({:.4f})\n".format(score.mean(), score.std()))
+    ransac = RANSACRegressor()
+    TabModel.append(ransac)
+
+    sgdr = SGDRegressor(penalty='elasticnet')
+    TabModel.append(sgdr)
+
+    xgbr = xgb.XGBRegressor(max_depth=3, n_estimators=2200)
+    TabModel.append(xgbr)
+
 
     lasso = make_pipeline(RobustScaler(), Lasso(alpha =0.0005, random_state=1))
-    score = rmsle_cv(lasso)
-    print("\nLasso score: {:.4f} ({:.4f})\n".format(score.mean(), score.std()))
+    # TabModel.append(lasso)
 
-
-    stacked_averaged_models = StackingAveragedModels(base_models = (ENet, GBoost, KRR),
+    stacked_averaged_models = StackingAveragedModels(base_models = (enet, gboost, krr),
                                                     meta_model = lasso)
+    # TabModel.append(stacked_averaged_models)
 
-    score = rmsle_cv(stacked_averaged_models)
-    print("Stacking Averaged models score: {:.4f} ({:.4f})".format(score.mean(), score.std()))
-
-
+    if len(TabModel) > 0:
+        for mod in TabModel:
+            print("1er model : ", mod)
+            print(mod.__class__.__name__, " cross validation score : ", rmsle_cv(mod).mean())
+            mod.fit(X_train, y_train)
+            print(mod.__class__.__name__, mod.score(X_test, y_test), " score : ", mean_squared_error(y_test, mod.predict(X_test)))
+    """
 
 ################### GOAT PREDICTOR PR LE MOMENT ###################
     # Meilleur resultat obtenu avec n_estimator = 10000 et num_leaves=40
-    model = lgb.LGBMRegressor(n_estimators=100000, num_leaves=40)
-    model.fit(X_train, y_train)
+    # model = lgb.LGBMRegressor(n_estimators=100000, num_leaves=40)
+    # model.fit(X_train, y_train)
 ###################################################################
 
     # select = SelectKBest(score_func=f_regression, k=8)
@@ -173,13 +181,7 @@ def testModel(pred = False):
     # print(features[filter])
     # print(z) 
 
-    # svm = LinearSVR()
 
-    # model = RANSACRegressor()
-
-    # model = SGDRegressor(penalty='elasticnet')
-
-    # model = xgb.XGBRegressor(max_depth=3, n_estimators=2200)
     
 
     #Meilleur resultat obtenu avec n_estimator = 10000 et num_leaves=40
@@ -189,24 +191,21 @@ def testModel(pred = False):
 
     # model = RandomForestRegressor()
 
+    model = RANSACRegressor()
+    model.fit(X_train, y_train)
 
-    # model.fit(X_train, y_train)
-
-    # train_score = mean_squared_error(y_train, model.predict(X_train))
-    # test_score = mean_squared_error(y_test, model.predict(X_test))
+    train_score = mean_squared_error(y_train, model.predict(X_train))
+    test_score = mean_squared_error(y_test, model.predict(X_test))
     
-    # score = rmsle_cv(model)
-    # print("LGBM score: {:.4f} ({:.4f})\n" .format(score.mean(), score.std()))
-    
-    # print("Train Score:", train_score)
-    # print("Test Score:", test_score)
+    print("Train Score:", train_score)
+    print("Test Score:", test_score)
 
-    N, train_score2, val_score = learning_curve(model, X_train, y_train, cv=4, scoring='neg_root_mean_squared_error', train_sizes=np.linspace(0.1,1,10))
+    # N, train_score2, val_score = learning_curve(model, X_train, y_train, cv=4, scoring='neg_root_mean_squared_error', train_sizes=np.linspace(0.1,1,10))
 
-    plt.figure(figsize=(12,8))
-    plt.plot(N, train_score2.mean(axis=1))
-    plt.plot(N, val_score.mean(axis=1))
-    plt.show()
+    # plt.figure(figsize=(12,8))
+    # plt.plot(N, train_score2.mean(axis=1))
+    # plt.plot(N, val_score.mean(axis=1))
+    # plt.show()
 
     # lgb.plot_importance(gbr, max_num_features=10)
     # plt.show()
@@ -246,4 +245,4 @@ def testModel(pred = False):
             writer.writerows(data)
 
 
-testModel(False)
+testModel(True)
