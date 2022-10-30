@@ -84,11 +84,11 @@ def testModel(pred = False):
 
 ####################### Preparation des dataframes #######################
     # On récupère le dataFrame et on prepare tout le bordel
-    # df = features.prepareDataframe(features.addOrderRequest(pd.read_csv("./data/allData.csv")))
-    # df.to_csv("ceciestuntest.csv")
+    df = features.prepareDataframe(features.addOrderRequest(pd.read_csv("./data/allData.csv")))
+    df.to_csv("ceciestuntest.csv")
 
-    df = pd.read_csv('ceciestuntest.csv')
-    df.drop(["Unnamed: 0"], axis=1, inplace=True)
+    # df = pd.read_csv('ceciestuntest.csv')
+    # df.drop(["Unnamed: 0"], axis=1, inplace=True)
 
     # on récupère la colonne cible, le prix, et on la supprime
     y = df["price"]
@@ -166,9 +166,9 @@ def testModel(pred = False):
 ################### GOAT PREDICTOR PR LE MOMENT ###################
     # Meilleur resultat obtenu avec n_estimator = 10000 et num_leaves=40
     print("starting regression...")
-    for i in np.arange(0.2,0.4,0.02):
-        print("i = ", i)
-        model = lgb.LGBMRegressor(n_estimators=10000, num_leaves=40, learning_rate=i)
+    # for i in np.arange(0.01,1.1,0.1):
+    #     print("i = ", i)
+    model = lgb.LGBMRegressor(boosting_type='dart', n_estimators=10000, num_leaves=40, learning_rate=0.1)
 ###################################################################
 
     # select = SelectKBest(score_func=f_regression, k=8)
@@ -195,23 +195,23 @@ def testModel(pred = False):
 
     # model = RANSACRegressor()
 
-        model.fit(X_train, y_train)
+    model.fit(X_train, y_train)
 
-        train_score = mean_squared_error(y_train, model.predict(X_train))
-        test_score = mean_squared_error(y_test, model.predict(X_test))
-        
-        print("Train Score:", train_score)
-        print("Test Score:", test_score)
+    train_score = mean_squared_error(y_train, model.predict(X_train))
+    test_score = mean_squared_error(y_test, model.predict(X_test))
+    
+    print("Train Score:", train_score)
+    print("Test Score:", test_score)
 
-# N, train_score2, val_score = learning_curve(model, X_train, y_train, cv=4, scoring='neg_root_mean_squared_error', train_sizes=np.linspace(0.1,1,10))
+    # N, train_score2, val_score = learning_curve(model, X_train, y_train, cv=4, scoring='neg_root_mean_squared_error', train_sizes=np.linspace(0.1,1,10))
 
-# plt.figure(figsize=(12,8))
-# plt.plot(N, train_score2.mean(axis=1))
-# plt.plot(N, val_score.mean(axis=1))
-# plt.show()
+    # plt.figure(figsize=(12,8))
+    # plt.plot(N, train_score2.mean(axis=1))
+    # plt.plot(N, val_score.mean(axis=1))
+    # plt.show()
 
-# lgb.plot_importance(gbr, max_num_features=10)
-# plt.show()
+    # lgb.plot_importance(model, max_num_features=10)
+    # plt.show()
 
     if(pred == True):
 
@@ -248,4 +248,4 @@ def testModel(pred = False):
             writer.writerows(data)
 
 
-testModel(False)
+testModel(True)

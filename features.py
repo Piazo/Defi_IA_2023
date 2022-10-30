@@ -383,7 +383,7 @@ def pricingRequest(avatarName, language, city, date, mobile):
 
 
 def stMakeRequest():
-    listReq = np.load("./data/request.npy")
+    listReq = np.load("./data/request.npy")[-313:]
     st.write("Here is a sample of the request you are about to send :")
     col1, col2 = st.columns(2)
     with col1:
