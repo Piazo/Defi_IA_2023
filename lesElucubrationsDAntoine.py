@@ -86,11 +86,13 @@ def testModel(pred = False):
 
 ####################### Preparation des dataframes #######################
     # On récupère le dataFrame et on prepare tout le bordel
-    # df = features.prepareDataframe(features.addOrderRequest(pd.read_csv("./data/allData.csv")))
-    # df.to_csv("ceciestuntest.csv")
+    print("la")
+    df = features.prepareDataframe(features.addOrderRequest(pd.read_csv("./data/allData.csv")))
+    print('ici')
+    df.to_csv("ceciestuntest.csv")
 
-    df = pd.read_csv('ceciestuntest.csv')
-    df.drop(["Unnamed: 0"], axis=1, inplace=True)
+    # df = pd.read_csv('ceciestuntest.csv')
+    # df.drop(["Unnamed: 0"], axis=1, inplace=True)
 
     # on récupère la colonne cible, le prix, et on la supprime
     y = df["price"]
@@ -168,8 +170,6 @@ def testModel(pred = False):
 ################### GOAT PREDICTOR PR LE MOMENT ###################
     # Meilleur resultat obtenu avec n_estimator = 10000 et num_leaves=40
     print("starting regression...")
-    # for i in np.arange(0.01,1.1,0.1):
-    #     print("i = ", i)
     model = lgb.LGBMRegressor(boosting_type='goss', n_estimators=10000, num_leaves=40, learning_rate=0.1)
 ###################################################################
 
@@ -184,9 +184,6 @@ def testModel(pred = False):
     # print("Selected best 8:")
     # print(features[filter])
     # print(z) 
-
-
-    
 
     #Meilleur resultat obtenu avec n_estimator = 10000 et num_leaves=40
     # model = lgb.LGBMRegressor(num_leaves=40, n_estimators=10000)
@@ -216,7 +213,6 @@ def testModel(pred = False):
     # plt.show()
 
     if(pred == True):
-
         # On traite les données de test_set.csv
         test_data = pd.read_csv("./data/test_set.csv")
         test_data = test_data.drop(columns=["index"])

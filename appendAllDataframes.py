@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import features
 
 def appendDf():
     indexPrincingRequest = []
@@ -23,8 +24,13 @@ def appendDf():
     pricing_requests = pd.concat(pricing_requests)
 
     print("Concatenating done !")
+    pricing_requests.to_csv('./data/allData.csv')
+
+    print("Adding order requests")
+    pricing_requests = features.addOrderRequest(pd.read_csv('./data/allData.csv'))
     print("Exporting to csv...")
     pricing_requests.to_csv('./data/allData.csv')
+
     print("Exporting done !")
 
 if __name__=="__main__":
