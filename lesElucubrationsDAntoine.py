@@ -1,3 +1,4 @@
+from tabnanny import verbose
 import pandas as pd
 import features
 from numba import jit, cuda
@@ -12,6 +13,7 @@ from sklearn.linear_model import LinearRegression, SGDRegressor, RANSACRegressor
 from sklearn.svm import LinearSVR
 import lightgbm as lgb
 import xgboost as xgb
+from sklearn.tree import DecisionTreeRegressor
 
 from sklearn.compose import make_column_transformer
 from sklearn.metrics import mean_squared_error
@@ -84,11 +86,11 @@ def testModel(pred = False):
 
 ####################### Preparation des dataframes #######################
     # On récupère le dataFrame et on prepare tout le bordel
-    df = features.prepareDataframe(features.addOrderRequest(pd.read_csv("./data/allData.csv")))
-    df.to_csv("ceciestuntest.csv")
+    # df = features.prepareDataframe(features.addOrderRequest(pd.read_csv("./data/allData.csv")))
+    # df.to_csv("ceciestuntest.csv")
 
-    # df = pd.read_csv('ceciestuntest.csv')
-    # df.drop(["Unnamed: 0"], axis=1, inplace=True)
+    df = pd.read_csv('ceciestuntest.csv')
+    df.drop(["Unnamed: 0"], axis=1, inplace=True)
 
     # on récupère la colonne cible, le prix, et on la supprime
     y = df["price"]
@@ -168,7 +170,7 @@ def testModel(pred = False):
     print("starting regression...")
     # for i in np.arange(0.01,1.1,0.1):
     #     print("i = ", i)
-    model = lgb.LGBMRegressor(boosting_type='dart', n_estimators=10000, num_leaves=40, learning_rate=0.1)
+    model = lgb.LGBMRegressor(boosting_type='goss', n_estimators=10000, num_leaves=40, learning_rate=0.1)
 ###################################################################
 
     # select = SelectKBest(score_func=f_regression, k=8)
