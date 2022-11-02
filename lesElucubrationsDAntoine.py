@@ -170,7 +170,7 @@ def testModel(pred = False):
 ################### GOAT PREDICTOR PR LE MOMENT ###################
     # Meilleur resultat obtenu avec n_estimator = 10000 et num_leaves=40
     print("starting regression...")
-    model = lgb.LGBMRegressor(boosting_type='goss', n_estimators=10000, num_leaves=40, learning_rate=0.1)
+    model = lgb.LGBMRegressor(boosting_type='gbdt', n_estimators=150000, num_leaves=40, learning_rate=0.1)
 ###################################################################
 
     # select = SelectKBest(score_func=f_regression, k=8)

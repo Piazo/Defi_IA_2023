@@ -13,7 +13,7 @@ print(device_lib.list_local_devices())'''
 
 
 # On récupère le dataFrame
-df = features.addOrderRequest(pd.read_csv("./data/allData.csv"))
+df = pd.read_csv("./data/allData.csv")
 
 print("test1")
 
