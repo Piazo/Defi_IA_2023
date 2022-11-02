@@ -13,9 +13,10 @@ print(device_lib.list_local_devices())'''
 
 
 # On récupère le dataFrame
-df = pd.read_csv("./data/allData.csv")
+df = features.prepareDataframe(pd.read_csv("./data/allData.csv"))
+df.drop(["Unnamed: 0"], axis=1, inplace=True)
 
-print("test1")
+print(df.dtypes)
 
 # On enlève la première colonne, et on enlève l'avatar et le request order pour l'instant
 df = df.drop(columns=["avatar_id"])
@@ -61,9 +62,9 @@ def plot_loss(history):
 def build_and_compile_model():
     print("ca pete la")
     model = keras.Sequential([
-        tf.layers.Dense(300, activation='relu'),
-        tf.layers.Dense(100, activation='relu'),
-        tf.layers.Dense(1)
+        tf.keras.layers.Dense(300, activation='relu'),
+        tf.keras.layers.Dense(100, activation='relu'),
+        tf.keras.layers.Dense(1)
     ])
 
     model.compile(loss='mean_absolute_error',

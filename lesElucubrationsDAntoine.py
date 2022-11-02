@@ -171,7 +171,7 @@ def testModel(pred = False):
 ################### GOAT PREDICTOR PR LE MOMENT ###################
     # Meilleur resultat obtenu avec n_estimator = 10000 et num_leaves=40
     print("starting regression...")
-    # model = lgb.LGBMRegressor(boosting_type='gbdt', n_estimators=1000, num_leaves=40, learning_rate=0.1)
+    model1 = lgb.LGBMRegressor(boosting_type='gbdt', n_estimators=1400, num_leaves=40, learning_rate=0.1)
 ###################################################################
 
     # select = SelectKBest(score_func=f_regression, k=8)
@@ -193,9 +193,15 @@ def testModel(pred = False):
 
     # model = RandomForestRegressor()
 
-    model = DecisionTreeRegressor(min_samples_split=10, min_samples_leaf=1, max_features=60)
+    model2 = DecisionTreeRegressor(min_samples_split=5, min_samples_leaf=1)
 
     # model = RANSACRegressor()
+
+    model = StackingAveragedModels(base_models = (model1, model2),
+                                                        meta_model = model1)
+
+    score = rmsle_cv(model)
+    # print("Stacking Averaged models score: {:.4f}".format(score.mean()))
 
     model.fit(X_train, y_train)
 
