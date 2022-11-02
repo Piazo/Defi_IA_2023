@@ -27,7 +27,10 @@ def appendDf():
     pricing_requests.to_csv('./data/allData.csv')
 
     print("Adding order requests")
-    pricing_requests = features.addOrderRequest(pd.read_csv('./data/allData.csv'))
+    df = pd.read_csv('./data/allData.csv')
+    print(df.dtypes)
+    # df.drop(["Unnamed: 0"], axis=1, inplace=True)
+    pricing_requests = features.addOrderRequest(df)
     print("Exporting to csv...")
     pricing_requests.to_csv('./data/allData.csv')
 

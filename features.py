@@ -133,10 +133,13 @@ def addOrderRequest(df):
         if addOne and df.loc[ind, "ind"] == 0 and lastAvatarID == df.loc[ind, "avatar_id"]:
             cptOrdReq[row["avatar_id"]] = cptOrdReq[row["avatar_id"]] +1
             addOne = False
-        df.loc[ind, "order_requests"] = int(cptOrdReq[row["avatar_id"]])
+        df.loc[ind, "order_requests"] = cptOrdReq[row["avatar_id"]]
         lastAvatarID = df.loc[ind, "avatar_id"]
     # Delete the previous index column that is now useless
     df = df.drop(['ind'], axis=1)
+    print(df.dtypes)
+    df['order_requests'] = df['order_requests'].astype(np.int64)    
+    print(df.dtypes)
     return df
 
 # Add the hotel features on the inputted dataframe

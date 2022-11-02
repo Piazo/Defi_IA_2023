@@ -59,6 +59,7 @@ def plot_loss(history):
     plt.grid(True)
 
 def build_and_compile_model():
+    print("ca pete la")
     model = keras.Sequential([
         tf.layers.Dense(300, activation='relu'),
         tf.layers.Dense(100, activation='relu'),

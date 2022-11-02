@@ -24,6 +24,9 @@ import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin, RegressorMixin, clone
 
 
+#TODO: Essayer de regrouper les labels hotel et noms d'hotel et changer les hotel id en label plutot que en int
+
+
 class StackingAveragedModels(BaseEstimator, RegressorMixin, TransformerMixin):
     def __init__(self, base_models, meta_model, n_folds=5):
         self.base_models = base_models
@@ -86,13 +89,11 @@ def testModel(pred = False):
 
 ####################### Preparation des dataframes #######################
     # On récupère le dataFrame et on prepare tout le bordel
-    print("la")
-    df = features.prepareDataframe(features.addOrderRequest(pd.read_csv("./data/allData.csv")))
-    print('ici')
-    df.to_csv("ceciestuntest.csv")
+    # df = features.prepareDataframe(pd.read_csv("./data/allData.csv"))
+    # df.to_csv("ceciestuntest.csv")
 
-    # df = pd.read_csv('ceciestuntest.csv')
-    # df.drop(["Unnamed: 0"], axis=1, inplace=True)
+    df = pd.read_csv('ceciestuntest.csv')
+    df.drop(["Unnamed: 0", "Unnamed: 0.1"], axis=1, inplace=True)
 
     # on récupère la colonne cible, le prix, et on la supprime
     y = df["price"]
@@ -107,7 +108,7 @@ def testModel(pred = False):
         remainder='passthrough')
     transformed = columns_transfo.fit_transform(df).toarray()
     df = pd.DataFrame(transformed, columns=columns_transfo.get_feature_names_out())
-    X_train, X_test, y_train, y_test = train_test_split(df, y, test_size=0.1, random_state=0)
+    X_train, X_test, y_train, y_test = train_test_split(df, y, test_size=0.2, random_state=0)
 
     # On standardise les données
     scaler = MinMaxScaler().fit(X_train)
@@ -170,7 +171,7 @@ def testModel(pred = False):
 ################### GOAT PREDICTOR PR LE MOMENT ###################
     # Meilleur resultat obtenu avec n_estimator = 10000 et num_leaves=40
     print("starting regression...")
-    model = lgb.LGBMRegressor(boosting_type='gbdt', n_estimators=150000, num_leaves=40, learning_rate=0.1)
+    # model = lgb.LGBMRegressor(boosting_type='gbdt', n_estimators=1000, num_leaves=40, learning_rate=0.1)
 ###################################################################
 
     # select = SelectKBest(score_func=f_regression, k=8)
@@ -191,6 +192,8 @@ def testModel(pred = False):
     # model = GradientBoostingRegressor(n_estimators = 1000, max_depth=5)
 
     # model = RandomForestRegressor()
+
+    model = DecisionTreeRegressor(min_samples_split=10, min_samples_leaf=1, max_features=60)
 
     # model = RANSACRegressor()
 
