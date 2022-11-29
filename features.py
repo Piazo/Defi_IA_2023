@@ -388,7 +388,7 @@ def pricingRequest(avatarName, language, city, date, mobile):
 
 
 def stMakeRequest():
-    listReq = np.load("./data/request.npy")
+    listReq = np.load("./data/request.npy")[-514:] 
     st.write("Here is a sample of the request you are about to send :")
     col1, col2 = st.columns(2)
     with col1:
@@ -406,3 +406,50 @@ def stMakeRequest():
                 date = req[3]
                 mobile = req[4]
                 pricingRequest(avatar, language, city, date, mobile)
+
+
+def getMaxRequestOrderPerAvatar(df):
+    newdf = df[["avatar_id", "order_requests"]]
+    listAvatarID = pd.unique(newdf["avatar_id"])
+    IDandMaxRequest = []
+    for avatarID in listAvatarID:
+        maxOrderRequest = max(pd.unique(newdf[newdf["avatar_id"]==avatarID]["order_requests"]))
+        IDandMaxRequest.append([avatarID, maxOrderRequest])
+    return IDandMaxRequest
+
+def selectAvatarIDToKeep(tab, threshold):
+    nb = {}
+    for elem in tab:
+        if elem[1] in nb:
+            nb[elem[1]]+=1
+        else:
+            nb[elem[1]]=1
+    print(nb)
+    tooMuchValue = []
+    for i in nb:
+        if nb[i]>threshold:
+            tooMuchValue.append(i)
+
+    nbReqAndID = {}
+    for elem in tab:
+        if elem[1] in tooMuchValue:
+            if elem[1] in nbReqAndID:
+                nbReqAndID[elem[1]].append(elem[0])
+            else:
+                nbReqAndID[elem[1]] = [elem[0]]
+
+    IDToRemove = []
+    for i in nbReqAndID:
+        for j in range(1, threshold):
+            choice = random.choice(nbReqAndID[i])
+            nbReqAndID[i].remove(choice)
+        IDToRemove += nbReqAndID[i]
+    return IDToRemove
+
+def getDataFrameWithIDRemoved(df, idtab):
+    return df.drop(df[df["avatar_id"].isin(idtab)].index)
+
+def maxNumberOfAvatarPerRequestOrder(df, maxNumberOfRequest):
+    TabAvatarAndMaxRequest = getMaxRequestOrderPerAvatar(df)
+    idToDrop = selectAvatarIDToKeep(TabAvatarAndMaxRequest, maxNumberOfRequest)
+    return getDataFrameWithIDRemoved(df, idToDrop)

@@ -45,8 +45,8 @@ def testModel(pred = False):
 ################### GOAT PREDICTOR PR LE MOMENT ###################
     # Meilleur resultat obtenu avec n_estimator = 50000 et num_leaves=40
     print("starting regression...")
-    # model = lgb.LGBMRegressor(boosting_type='gbdt', n_estimators=1400, num_leaves=40, learning_rate=0.1)
-    model = xgb.XGBRegressor(n_estimators = 10000, max_depth = 7)
+    model = lgb.LGBMRegressor(boosting_type='gbdt', n_estimators=3000, num_leaves=40, learning_rate=0.1)
+    # model = xgb.XGBRegressor(n_estimators = 10000, max_depth = 7)
 
 ###################################################################
 
